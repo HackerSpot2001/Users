@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import UserLoginManager
-
+from Helpers.Utils import gen_user_login_history
 
 
 class Enumeration(models.Model):
@@ -47,9 +47,9 @@ class EnumerationType(models.Model):
 
 class UserLogin(AbstractUser):
     user_login_id       = models.CharField(primary_key=True,unique=True,max_length=20,editable=False)
-    password            = models.CharField(max_length=255, null=False)
+    username            = models.CharField(max_length=50, unique=True, null=False, blank=False )
+    password            = models.CharField(max_length=255, null=False,blank=False)
     salutation          = models.CharField(max_length=10, choices=(("Mr.","Mr"),("Mrs","Mrs")) )
-    username            = models.CharField(max_length=50, null=False, blank=False )
     first_name          = models.CharField(max_length=50, null=True)
     middle_name         = models.CharField(max_length=50, null=True)
     last_name           = models.CharField(null=True,max_length=50)
@@ -170,9 +170,10 @@ class StatusType(models.Model):
 
 
 class UserLoginHistory(models.Model):
-    user_login          = models.OneToOneField(UserLogin, models.DO_NOTHING, primary_key=True)  # The composite primary key (user_login_id, from_date) found, that is not supported. The first column is selected.
+    ulh_id              = models.CharField(max_length=30, primary_key=True, unique=True, default=gen_user_login_history)
+    user_login          = models.ForeignKey(UserLogin, models.DO_NOTHING)  # The composite primary key (user_login_id, from_date) found, that is not supported. The first column is selected.
     visit_id            = models.CharField(max_length=20, blank=True, null=True)
-    from_date           = models.DateTimeField()
+    from_date           = models.DateTimeField(auto_now_add=True)
     thru_date           = models.DateTimeField(blank=True, null=True)
     password_used       = models.CharField(max_length=255, blank=True, null=True)
     successful_login    = models.CharField(max_length=1, blank=True, null=True)
