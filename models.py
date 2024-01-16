@@ -20,6 +20,8 @@ class Enumeration(models.Model):
         managed     = True
         db_table    = 'enumeration'
         ordering    = ["-created_stamp"]
+        verbose_name_plural    = 'Enumeration'
+        
 
 
 
@@ -40,6 +42,7 @@ class EnumerationType(models.Model):
         managed     = True
         db_table    = 'enumeration_type'
         ordering    = ["-created_stamp"]
+        verbose_name_plural    = 'EnumerationType'
 
 
 class UserLogin(AbstractUser):
@@ -74,6 +77,7 @@ class UserLogin(AbstractUser):
         managed = True
         db_table = 'user_login'
         ordering = ["-created_stamp"]
+        verbose_name_plural    = 'UserLogin'
 
 
 
@@ -99,6 +103,7 @@ class Party(models.Model):
     class Meta:
         managed = True
         db_table = 'party'
+        verbose_name_plural = 'Party'
 
 
 
@@ -118,6 +123,7 @@ class PartyType(models.Model):
     class Meta:
         managed = True
         db_table = 'party_type'
+        verbose_name_plural = 'PartyType'
 
 
 
@@ -138,6 +144,8 @@ class StatusItem(models.Model):
     class Meta:
         managed = True
         db_table = 'status_item'
+        verbose_name_plural = 'StatusItem'
+
 
 
 class StatusType(models.Model):
@@ -156,3 +164,29 @@ class StatusType(models.Model):
     class Meta:
         managed = True
         db_table = 'status_type'
+        verbose_name_plural = 'StatusType'
+
+
+
+
+class UserLoginHistory(models.Model):
+    user_login          = models.OneToOneField(UserLogin, models.DO_NOTHING, primary_key=True)  # The composite primary key (user_login_id, from_date) found, that is not supported. The first column is selected.
+    visit_id            = models.CharField(max_length=20, blank=True, null=True)
+    from_date           = models.DateTimeField()
+    thru_date           = models.DateTimeField(blank=True, null=True)
+    password_used       = models.CharField(max_length=255, blank=True, null=True)
+    successful_login    = models.CharField(max_length=1, blank=True, null=True)
+    party               = models.ForeignKey(Party, models.DO_NOTHING, blank=True, null=True)
+    updated_stamp       = models.DateTimeField(auto_now_add=True)
+    created_stamp       = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.user_login.user_login_id    
+
+
+    class Meta:
+        managed = True
+        db_table = 'user_login_history'
+        unique_together = (('user_login', 'from_date'),)
+        verbose_name_plural = 'UserLoginHistory'
+
