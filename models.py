@@ -5,8 +5,10 @@ from .managers import UserLoginManager
 from Helpers.Utils import *
 
 
+primary_max_len = 40
+
 class Enumeration(models.Model):
-    enum_id             = models.CharField(primary_key=True, max_length=20)
+    enum_id             = models.CharField(primary_key=True, max_length=primary_max_len)
     enum_type           = models.ForeignKey('EnumerationType', models.CASCADE, blank=True, null=True)
     enum_code           = models.CharField(max_length=60, blank=True, null=True)
     sequence_id         = models.CharField(max_length=20, blank=True, null=True)
@@ -26,7 +28,7 @@ class Enumeration(models.Model):
 
 
 class EnumerationType(models.Model):
-    enum_type_id    = models.CharField(primary_key=True, max_length=20)
+    enum_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type     = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table       = models.CharField(max_length=1, blank=True, null=True)
     description     = models.CharField(max_length=255, blank=True, null=True)
@@ -46,7 +48,7 @@ class EnumerationType(models.Model):
 
 
 class UserLogin(AbstractUser):
-    user_login_id       = models.CharField(primary_key=True,unique=True,max_length=20,editable=False)
+    user_login_id       = models.CharField(primary_key=True,unique=True,max_length=primary_max_len,editable=False)
     username            = models.CharField(max_length=50, unique=True, null=False, blank=False )
     password            = models.CharField(max_length=255, null=False,blank=False)
     first_name          = models.CharField(max_length=50, null=True)
@@ -71,7 +73,7 @@ class UserLogin(AbstractUser):
     objects = UserLoginManager()
 
     def __str__(self):
-        return self.user_login_id    
+        return f"{self.user_login_id} - {self.username}"    
     
     def get_full_name(self):
         return ' '.join([self.first_name, self.middle_name,self.last_name])
@@ -85,7 +87,7 @@ class UserLogin(AbstractUser):
 
 
 class Party(models.Model):
-    party_id        = models.CharField(primary_key=True, max_length=20)
+    party_id        = models.CharField(primary_key=True, max_length=primary_max_len)
     party_type      = models.ForeignKey('PartyType', models.CASCADE, blank=True, null=True)
     external_id     = models.CharField(max_length=20, blank=True, null=True)
     description     = models.TextField(blank=True, null=True)
@@ -110,7 +112,7 @@ class Party(models.Model):
 
 
 class PartyType(models.Model):
-    party_type_id   = models.CharField(primary_key=True, max_length=20)
+    party_type_id   = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type     = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table       = models.CharField(max_length=1, blank=True, null=True)
     description     = models.CharField(max_length=255, blank=True, null=True)
@@ -130,7 +132,7 @@ class PartyType(models.Model):
 
 
 class StatusItem(models.Model):
-    status_id       = models.CharField(primary_key=True, max_length=20)
+    status_id       = models.CharField(primary_key=True, max_length=primary_max_len)
     status_type     = models.ForeignKey('StatusType', models.CASCADE, blank=True, null=True)
     status_code     = models.CharField(max_length=60, blank=True, null=True)
     sequence_id     = models.CharField(max_length=20, blank=True, null=True)
@@ -140,7 +142,7 @@ class StatusItem(models.Model):
 
 
     def __str__(self):
-        return self.status_id    
+        return f"{self.status_id} | {self.status_type_id}"    
     
 
     class Meta:
@@ -151,7 +153,7 @@ class StatusItem(models.Model):
 
 
 class StatusType(models.Model):
-    status_type_id  = models.CharField(primary_key=True, max_length=20)
+    status_type_id  = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type     = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table       = models.CharField(max_length=1, blank=True, null=True)
     description     = models.CharField(max_length=255, blank=True, null=True)
@@ -171,7 +173,7 @@ class StatusType(models.Model):
 
 
 class UserLoginHistory(models.Model):
-    ulh_id              = models.CharField(max_length=30, primary_key=True, unique=True, default=gen_user_login_history)
+    ulh_id              = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=gen_user_login_history)
     user_login          = models.ForeignKey(UserLogin, models.CASCADE)  # The composite primary key (user_login_id, from_date) found, that is not supported. The first column is selected.
     visit_id            = models.CharField(max_length=20, blank=True, null=True)
     from_date           = models.DateTimeField(auto_now_add=True)
@@ -195,12 +197,16 @@ class UserLoginHistory(models.Model):
 
 
 class ContactMechType(models.Model):
-    contact_mech_type_id    = models.CharField(primary_key=True, max_length=20)
+    contact_mech_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type             = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table               = models.CharField(max_length=1, blank=True, null=True)
     description             = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.contact_mech_type_id    
 
     class Meta:
         managed = True
@@ -210,11 +216,16 @@ class ContactMechType(models.Model):
 
 
 class ContactMechPurposeType(models.Model):
-    contact_mech_purpose_type_id    = models.CharField(primary_key=True, max_length=20)
+    contact_mech_purpose_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
     description                     = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp                   = models.DateTimeField(auto_now_add=True)
     created_stamp                   = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.contact_mech_purpose_type_id    
+    
+    
     class Meta:
         managed     = True
         db_table    = 'contact_mech_purpose_type'
@@ -223,11 +234,15 @@ class ContactMechPurposeType(models.Model):
 
 
 class ContactMech(models.Model):
-    contact_mech_id     = models.CharField(primary_key=True, max_length=20)
+    contact_mech_id     = models.CharField(primary_key=True, max_length=primary_max_len)
     contact_mech_type   = models.ForeignKey('ContactMechType', models.CASCADE, blank=True, null=True)
     info_string         = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.contact_mech_id    
 
 
     class Meta:
@@ -238,7 +253,7 @@ class ContactMech(models.Model):
 
 
 class PartyContactMech(models.Model):
-    pcm_id          = models.CharField(max_length=30, primary_key=True, unique=True, default=generate_pcm)
+    pcm_id          = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=generate_pcm)
     party           = models.ForeignKey('Party', models.CASCADE)  # The composite primary key (party_id, contact_mech_id, from_date) found, that is not supported. The first column is selected.
     contact_mech    = models.ForeignKey(ContactMech, models.CASCADE)
     from_date       = models.DateTimeField(auto_now_add=True)
@@ -251,6 +266,9 @@ class PartyContactMech(models.Model):
     # role_type       = models.ForeignKey('RoleType', models.CASCADE, blank=True, null=True)
 
 
+    def __str__(self):
+        return f"{self.pcm_id} | {self.party_id} | {self.contact_mech_id}" 
+
     class Meta:
         managed     = True
         db_table    = 'party_contact_mech'
@@ -260,7 +278,7 @@ class PartyContactMech(models.Model):
 
 
 class PartyContactMechPurpose(models.Model):
-    pcm_purpose_id              = models.CharField(max_length=30, primary_key=True, unique=True, default=generate_pcm_porpuse)
+    pcm_purpose_id              = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=generate_pcm_porpuse)
     party                       = models.ForeignKey(Party, models.CASCADE)  # The composite primary key (party_id, contact_mech_id, contact_mech_purpose_type_id, from_date) found, that is not supported. The first column is selected.
     contact_mech                = models.ForeignKey(ContactMech, models.CASCADE)
     contact_mech_purpose_type   = models.ForeignKey(ContactMechPurposeType, models.CASCADE)
@@ -268,6 +286,11 @@ class PartyContactMechPurpose(models.Model):
     thru_date                   = models.DateTimeField(blank=True, null=True)
     updated_stamp               = models.DateTimeField(auto_now_add=True)
     created_stamp               = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.pcm_purpose_id} | {self.party_id} | {self.contact_mech_id} | {self.contact_mech_purpose_type_id}" 
+
 
     class Meta:
         managed = True
@@ -278,14 +301,19 @@ class PartyContactMechPurpose(models.Model):
 
 
 class PartyContent(models.Model):
-    party_content_id    = models.CharField(max_length=30, primary_key=True, unique=True, default=gen_party_content)
-    party               = models.OneToOneField(Party, models.CASCADE)  # The composite primary key (party_id, content_id, party_content_type_id, from_date) found, that is not supported. The first column is selected.
+    party_content_id    = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=gen_party_content)
+    party               = models.ForeignKey(Party, models.CASCADE)  # The composite primary key (party_id, content_id, party_content_type_id, from_date) found, that is not supported. The first column is selected.
     content             = models.ForeignKey('Content', models.CASCADE)
     party_content_type  = models.ForeignKey('PartyContentType', models.CASCADE)
     from_date           = models.DateTimeField(auto_now_add=True)
     thru_date           = models.DateTimeField(blank=True, null=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.party_content_id} | {self.party_id} | {self.content_id} | {self.party_content_type_id}" 
+
 
     class Meta:
         managed = True
@@ -296,11 +324,15 @@ class PartyContent(models.Model):
 
 
 class PartyContentType(models.Model):
-    party_content_type_id   = models.CharField(primary_key=True, max_length=20)
+    party_content_type_id   = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type             = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     description             = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.party_content_type_id 
 
     class Meta:
         managed = True
@@ -322,6 +354,8 @@ class PartyGroup(models.Model):
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return self.party_id 
 
     class Meta:
         managed = True
@@ -331,11 +365,14 @@ class PartyGroup(models.Model):
 
 
 class ContentAssocType(models.Model):
-    content_assoc_type_id   = models.CharField(primary_key=True, max_length=20)
+    content_assoc_type_id   = models.CharField(primary_key=True, max_length=primary_max_len)
     description             = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.content_assoc_type_id 
 
     class Meta:
         managed     = True
@@ -345,11 +382,14 @@ class ContentAssocType(models.Model):
 
 
 class ContentPurposeType(models.Model):
-    content_purpose_type_id = models.CharField(primary_key=True, max_length=20)
+    content_purpose_type_id = models.CharField(primary_key=True, max_length=primary_max_len)
     description             = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.content_purpose_type_id 
 
     class Meta:
         managed     = True
@@ -359,12 +399,17 @@ class ContentPurposeType(models.Model):
 
 
 class ContentType(models.Model):
-    content_type_id     = models.CharField(primary_key=True, max_length=20)
+    content_type_id     = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type         = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table           = models.CharField(max_length=1, blank=True, null=True)
     description         = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.content_type_id
+
 
     class Meta:
         managed     = True
@@ -388,13 +433,16 @@ class PostalAddress(models.Model):
     city_geo            = models.ForeignKey('Geo', models.CASCADE, blank=True, null=True)
     country_geo         = models.ForeignKey('Geo', models.CASCADE, related_name='postaladdress_country_geo_set', blank=True, null=True)
     state_province_geo  = models.ForeignKey('Geo', models.CASCADE, related_name='postaladdress_state_province_geo_set', blank=True, null=True)
-    country_geo         = models.ForeignKey('Geo', models.CASCADE, related_name='postaladdress_country_geo_set', blank=True, null=True)
     municipality_geo    = models.ForeignKey('Geo', models.CASCADE, related_name='postaladdress_municipality_geo_set', blank=True, null=True)
     postal_code_geo     = models.ForeignKey('Geo', models.CASCADE, related_name='postaladdress_postal_code_geo_set', blank=True, null=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
     # geo_point           = models.ForeignKey(GeoPoint, models.CASCADE, blank=True, null=True)
 
+
+    def __str__(self):
+        return self.contact_mech_id
+    
     class Meta:
         managed = True
         db_table = 'postal_address'
@@ -403,7 +451,7 @@ class PostalAddress(models.Model):
 
 
 class Content(models.Model):
-    content_id              = models.CharField(primary_key=True, max_length=20)
+    content_id              = models.CharField(primary_key=True, max_length=primary_max_len)
     content_type            = models.ForeignKey('ContentType', models.CASCADE, blank=True, null=True)
     owner_content           = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     decorator_content       = models.ForeignKey('self', models.CASCADE, related_name='content_decorator_content_set', blank=True, null=True)
@@ -427,6 +475,10 @@ class Content(models.Model):
     # data_source             = models.ForeignKey('DataSource', models.CASCADE, blank=True, null=True)
     # character_set           = models.ForeignKey(CharacterSet, models.CASCADE, blank=True, null=True)
 
+
+    def __str__(self):
+        return self.content_id
+
     class Meta:
         managed = True
         db_table = 'content'
@@ -435,7 +487,7 @@ class Content(models.Model):
 
 
 class ContentAssoc(models.Model):
-    content_assoc_id        = models.CharField(primary_key=True, max_length=30,default=gen_content_assoc)
+    content_assoc_id        = models.CharField(primary_key=True, max_length=primary_max_len,default=gen_content_assoc)
     content                 = models.ForeignKey(Content, models.CASCADE)  # The composite primary key (content_id, content_id_to, content_assoc_type_id, from_date) found, that is not supported. The first column is selected.
     content_id_to           = models.ForeignKey(Content, models.CASCADE, db_column='content_id_to', related_name='contentassoc_content_id_to_set')
     content_assoc_type      = models.ForeignKey('ContentAssocType', models.CASCADE)
@@ -452,6 +504,9 @@ class ContentAssoc(models.Model):
     # data_source             = models.ForeignKey('DataSource', models.CASCADE, blank=True, null=True)
     # content_assoc_predicate = models.ForeignKey('ContentAssocPredicate', models.CASCADE, blank=True, null=True)
 
+
+    def __str__(self):
+        return self.content_assoc_id
 
 
     class Meta:
@@ -471,6 +526,10 @@ class TelecomNumber(models.Model):
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.contact_mech_id
+
     class Meta:
         managed = True
         db_table = 'telecom_number'
@@ -485,6 +544,10 @@ class ElectronicText(models.Model):
     updated_stamp   = models.DateTimeField(auto_now_add=True)
     created_stamp   = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.data_resource_id
+
     class Meta:
         managed = True
         db_table = 'electronic_text'
@@ -493,13 +556,13 @@ class ElectronicText(models.Model):
 
 
 class DataResource(models.Model):
-    data_resource_id        = models.CharField(primary_key=True, max_length=20,default=gen_data_resource)
+    data_resource_id        = models.CharField(primary_key=True, max_length=primary_max_len,default=gen_data_resource)
     data_resource_type      = models.ForeignKey('DataResourceType', models.CASCADE, blank=True, null=True)
     status                  = models.ForeignKey('StatusItem', models.CASCADE, blank=True, null=True)
     data_resource_name      = models.CharField(max_length=255, blank=True, null=True)
     locale_string           = models.CharField(max_length=10, blank=True, null=True)
     mime_type_id            = models.CharField(max_length=255, blank=True, null=True)
-    object_info             = models.CharField(max_length=255, blank=True, null=True)
+    object_info             = models.TextField(blank=True, null=True)
     related_detail_id       = models.CharField(max_length=20, blank=True, null=True)
     is_public               = models.CharField(max_length=1, blank=True, null=True)
     created_by_user_login   = models.ForeignKey('UserLogin', models.CASCADE, db_column='created_by_user_login', blank=True, null=True)
@@ -513,6 +576,11 @@ class DataResource(models.Model):
     # data_category           = models.ForeignKey(DataCategory, models.CASCADE, blank=True, null=True)
     # data_template_type      = models.ForeignKey('DataTemplateType', models.CASCADE, blank=True, null=True)
 
+
+    def __str__(self):
+        return self.data_resource_id
+
+    
     class Meta:
         managed = True
         db_table = 'data_resource'
@@ -520,12 +588,16 @@ class DataResource(models.Model):
 
 
 class DataResourceType(models.Model):
-    data_resource_type_id   = models.CharField(primary_key=True, max_length=20)
+    data_resource_type_id   = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type             = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table               = models.CharField(max_length=1, blank=True, null=True)
     description             = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp           = models.DateTimeField(auto_now_add=True)
     created_stamp           = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.data_resource_type_id
 
     class Meta:
         managed = True
@@ -536,7 +608,7 @@ class DataResourceType(models.Model):
 
 
 class Geo(models.Model):
-    geo_id          = models.CharField(primary_key=True, max_length=20)
+    geo_id          = models.CharField(primary_key=True, max_length=primary_max_len)
     geo_type        = models.ForeignKey('GeoType', models.CASCADE, blank=True, null=True)
     geo_name        = models.CharField(max_length=100, blank=True, null=True)
     geo_code        = models.CharField(max_length=60, blank=True, null=True)
@@ -546,6 +618,10 @@ class Geo(models.Model):
     updated_stamp   = models.DateTimeField(auto_now_add=True)
     created_stamp   = models.DateTimeField(auto_now_add=True)
 
+
+    def __str__(self):
+        return self.geo_id
+
     class Meta:
         managed = True
         db_table = 'geo'
@@ -553,12 +629,15 @@ class Geo(models.Model):
 
 
 class GeoAssoc(models.Model):
-    geo_assoc_id    = models.CharField(primary_key=True, max_length=20,default=gen_geo_assoc)
+    geo_assoc_id    = models.CharField(primary_key=True, max_length=primary_max_len,default=gen_geo_assoc)
     geo             = models.ForeignKey(Geo, models.CASCADE)  # The composite primary key (geo_id, geo_id_to) found, that is not supported. The first column is selected.
     geo_id_to       = models.ForeignKey(Geo, models.CASCADE, db_column='geo_id_to', related_name='geoassoc_geo_id_to_set')
     geo_assoc_type  = models.ForeignKey('GeoAssocType', models.CASCADE, blank=True, null=True)
     updated_stamp   = models.DateTimeField(auto_now_add=True)
     created_stamp   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.geo_assoc_id
 
     class Meta:
         managed = True
@@ -568,10 +647,14 @@ class GeoAssoc(models.Model):
 
 
 class GeoAssocType(models.Model):
-    geo_assoc_type_id   = models.CharField(primary_key=True, max_length=20)
+    geo_assoc_type_id   = models.CharField(primary_key=True, max_length=primary_max_len)
     description         = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return self.geo_assoc_type_id
 
     class Meta:
         managed = True
@@ -581,12 +664,15 @@ class GeoAssocType(models.Model):
 
 
 class GeoType(models.Model):
-    geo_type_id     = models.CharField(primary_key=True, max_length=20)
+    geo_type_id     = models.CharField(primary_key=True, max_length=primary_max_len)
     parent_type     = models.ForeignKey('self', models.CASCADE, blank=True, null=True)
     has_table       = models.CharField(max_length=1, blank=True, null=True)
     description     = models.CharField(max_length=255, blank=True, null=True)
     updated_stamp   = models.DateTimeField(auto_now_add=True)
     created_stamp   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.geo_type_id
 
     class Meta:
         managed = True
