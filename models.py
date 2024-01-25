@@ -1,4 +1,3 @@
-from typing import Any
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import UserLoginManager
@@ -49,7 +48,7 @@ class EnumerationType(models.Model):
 
 class UserLogin(AbstractUser):
     user_login_id       = models.CharField(primary_key=True,unique=True,max_length=primary_max_len,editable=False)
-    username            = models.CharField(max_length=50, unique=True, null=False, blank=False )
+    username            = models.CharField(max_length=primary_max_len, unique=False, null=False, blank=False )
     password            = models.CharField(max_length=255, null=False,blank=False)
     first_name          = models.CharField(max_length=50, null=True)
     middle_name         = models.CharField(max_length=50, null=True)
@@ -59,6 +58,7 @@ class UserLogin(AbstractUser):
     birth_date          = models.DateField(null=True)
     deceased_date       = models.DateField(null=True)
     is_private          = models.BooleanField(default=False)
+    is_deleted          = models.BooleanField(default=False)
     salutation          = models.ForeignKey(Enumeration, null=True, on_delete=models.CASCADE,related_name='salutation')
     gender              = models.ForeignKey(Enumeration, null=True, on_delete=models.CASCADE, related_name='gender')
     marital_status      = models.ForeignKey(Enumeration, null=True, on_delete=models.CASCADE, related_name='marital_status')
@@ -76,7 +76,7 @@ class UserLogin(AbstractUser):
         return f"{self.user_login_id} - {self.username}"    
     
     def get_full_name(self):
-        return ' '.join([self.first_name, self.middle_name,self.last_name])
+        return str(' '.join([self.first_name, self.middle_name,self.last_name])).replace('  ',' ')
 
     class Meta:
         managed = True
@@ -253,51 +253,28 @@ class ContactMech(models.Model):
 
 
 class PartyContactMech(models.Model):
-    pcm_id          = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=generate_pcm)
-    party           = models.ForeignKey('Party', models.CASCADE)  # The composite primary key (party_id, contact_mech_id, from_date) found, that is not supported. The first column is selected.
-    contact_mech    = models.ForeignKey(ContactMech, models.CASCADE)
-    from_date       = models.DateTimeField(auto_now_add=True)
-    thru_date       = models.DateTimeField(blank=True, null=True)
-    extension       = models.CharField(max_length=255, blank=True, null=True)
-    verified        = models.CharField(max_length=1, blank=True, null=True)
-    comments        = models.CharField(max_length=255, blank=True, null=True)
-    updated_stamp   = models.DateTimeField(auto_now_add=True)
-    created_stamp   = models.DateTimeField(auto_now_add=True)
+    pcm_id              = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=generate_pcm)
+    party               = models.ForeignKey('Party', models.CASCADE)  # The composite primary key (party_id, contact_mech_id, from_date) found, that is not supported. The first column is selected.
+    contact_mech        = models.ForeignKey(ContactMech, models.CASCADE)
+    cm_purpose_type     = models.ForeignKey(ContactMechPurposeType, models.CASCADE, null=True)
+    from_date           = models.DateTimeField(auto_now_add=True)
+    thru_date           = models.DateTimeField(blank=True, null=True)
+    extension           = models.CharField(max_length=255, blank=True, null=True)
+    verified            = models.CharField(max_length=1, blank=True, null=True)
+    comments            = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp       = models.DateTimeField(auto_now_add=True)
+    created_stamp       = models.DateTimeField(auto_now_add=True)
     # role_type       = models.ForeignKey('RoleType', models.CASCADE, blank=True, null=True)
 
 
     def __str__(self):
-        return f"{self.pcm_id} | {self.party_id} | {self.contact_mech_id}" 
+        return f"{self.party_id} | {self.contact_mech_id} | {self.contact_mech.contact_mech_type_id} | {self.thru_date}" 
 
     class Meta:
         managed     = True
         db_table    = 'party_contact_mech'
-        unique_together = (('party', 'contact_mech', 'from_date'),)
+        unique_together = (('party', 'contact_mech', 'cm_purpose_type', 'from_date'),)
         verbose_name_plural = 'PartyContactMech'
-
-
-
-class PartyContactMechPurpose(models.Model):
-    pcm_purpose_id              = models.CharField(max_length=primary_max_len, primary_key=True, unique=True, default=generate_pcm_porpuse)
-    party                       = models.ForeignKey(Party, models.CASCADE)  # The composite primary key (party_id, contact_mech_id, contact_mech_purpose_type_id, from_date) found, that is not supported. The first column is selected.
-    contact_mech                = models.ForeignKey(ContactMech, models.CASCADE)
-    contact_mech_purpose_type   = models.ForeignKey(ContactMechPurposeType, models.CASCADE)
-    from_date                   = models.DateTimeField(auto_now_add=True)
-    thru_date                   = models.DateTimeField(blank=True, null=True)
-    updated_stamp               = models.DateTimeField(auto_now_add=True)
-    created_stamp               = models.DateTimeField(auto_now_add=True)
-
-
-    def __str__(self):
-        return f"{self.pcm_purpose_id} | {self.party_id} | {self.contact_mech_id} | {self.contact_mech_purpose_type_id}" 
-
-
-    class Meta:
-        managed = True
-        db_table = 'party_contact_mech_purpose'
-        unique_together = (('party', 'contact_mech', 'contact_mech_purpose_type', 'from_date'),)
-        verbose_name_plural = 'PartyContactMechPurpose'
-
 
 
 class PartyContent(models.Model):
@@ -678,4 +655,68 @@ class GeoType(models.Model):
         managed = True
         db_table = 'geo_type'
         verbose_name_plural = 'GeoType'
+
+
+
+
+class PartyClassification(models.Model):
+    party_classification_id     = models.CharField(primary_key=True, max_length=primary_max_len, default=gen_party_classification)
+    party                       = models.ForeignKey(Party, models.DO_NOTHING)  # The composite primary key (party_id, party_classification_group_id, from_date) found, that is not supported. The first column is selected.
+    party_classification_group  = models.ForeignKey('PartyClassificationGroup', models.DO_NOTHING)
+    from_date                   = models.DateTimeField(auto_now_add=True)
+    thru_date                   = models.DateTimeField(blank=True, null=True)
+    updated_stamp               = models.DateTimeField(auto_now_add=True)
+    created_stamp               = models.DateTimeField(auto_now_add=True)
+
+
+
+    def __str__(self):
+        return f"{self.party_id} | {self.party_classification_group_id}"
+
+
+    class Meta:
+        managed     = True
+        db_table    = 'party_classification'
+        unique_together = (('party', 'party_classification_group', 'from_date'),)
+        verbose_name_plural = 'PartyClassification'
+
+
+
+class PartyClassificationGroup(models.Model):
+    party_classification_group_id   = models.CharField(primary_key=True, max_length=primary_max_len)
+    party_classification_type       = models.ForeignKey('PartyClassificationType', models.DO_NOTHING, blank=True, null=True)
+    parent_group                    = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    description                     = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp                   = models.DateTimeField(auto_now_add=True)
+    created_stamp                   = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.party_classification_group_id} | {self.party_classification_type_id}"
+
+
+    class Meta:
+        managed     = True
+        db_table    = 'party_classification_group'
+        unique_together = (('party_classification_group_id', 'party_classification_type'),)
+        verbose_name_plural = 'PartyClassificationGroup'
+
+
+
+class PartyClassificationType(models.Model):
+    party_classification_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
+    parent_type                     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    has_table                       = models.CharField(max_length=1, blank=True, null=True)
+    description                     = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp                   = models.DateTimeField(auto_now_add=True)
+    created_stamp                   = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.party_classification_type_id
+
+
+    class Meta:
+        managed     = True
+        db_table    = 'party_classification_type'
+        verbose_name_plural = 'PartyClassificationType'
 
