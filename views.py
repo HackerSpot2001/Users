@@ -2,14 +2,14 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import auth as authentication 
-from .models import UserLogin, UserLoginHistory, Party, PartyContactMech, TelecomNumber, PartyContent
+from .models import UserLogin, UserLoginHistory
 from django.utils.timezone import now 
 from django.db.models import Q 
 from django.conf import settings
-from .views_helpers import create_contact_mech, create_content
-from Helpers.Utils import handle_exception, SuccessResp, handle_params, gen_id, get_initials, generate_password, generate_url_hash
-from Helpers.Utils import checkEmail, checkMobile , get_thumbnails_from_img, save_file_to_filesystem
-from json import loads,dumps
+from .views_helpers import create_content, get_user_info, modify_user
+from Helpers.Utils import handle_exception, SuccessResp, handle_params, gen_id, generate_password, generate_url_hash
+from Helpers.Utils import get_thumbnails_from_img, save_file_to_filesystem
+from json import dumps
 
 
 # ALL Get Requests
@@ -27,72 +27,16 @@ def logoff(req):
     return JsonResponse(res)
 
 
-
+    
 @require_http_methods(['GET',])
 def get_profile(req):
     try:
         user    =   req.user
         if user.is_anonymous:
             raise Exception("HANDLED:User is not logged-in.")
-
-        pcs             = PartyContent.objects.filter( party_content_type_id='PROFILE_PIC', thru_date=None ).select_related('content').all()
-        pcm_email       = PartyContactMech.objects.filter( party_id=user.party_id, verified='Y', thru_date=None, contact_mech__contact_mech_type_id='EMAIL_ADDRESS'  ).select_related('contact_mech').all()
-        pcm_telecom     = PartyContactMech.objects.filter( party_id=user.party_id, verified='Y', thru_date=None, contact_mech__contact_mech_type_id='TELECOM_NUMBER' ).select_related('contact_mech').all()
-        telecoms        = []
-        for pcm_obj in pcm_telecom:
-            data = {
-                'pcm_id'                :   pcm_obj.pcm_id,
-                'contact_mech_id'       :   pcm_obj.contact_mech.contact_mech_id,
-                'contact_mech_type_id'  :   pcm_obj.contact_mech.contact_mech_type_id,
-            }
-            contact_id              = pcm_obj.contact_mech_id
-            telecom_obj             = TelecomNumber.objects.get(contact_mech_id=contact_id)
-            data['value']           = telecom_obj.contact_number
-            data['country_code']    = telecom_obj.country_code
-            telecoms.append(data)
-
-
-        res = {
-            'profile' : {
-                'fullname'          : user.get_full_name(),
-                'username'          : user.username,
-                'user_login_id'     : user.user_login_id,
-                'marital_status'    : user.marital_status_id,
-                'salutation'        : user.salutation_id,
-                'gender'            : user.gender_id,
-                'dob'               : user.birth_date,
-                'party_id'          : user.party_id,
-                'party_type'        : user.party.party_type_id,
-                'party_assets'      : {
-                        pc.party_content_type_id : {
-                            'party_content_id'  :   pc.party_content_id ,
-                            'content_id'        :   pc.content_id ,
-                            'data_resource_id'  :   pc.content.data_resource_id,
-                            'object_info'       :   loads(pc.content.data_resource.object_info),
-                        }
-                        for pc in pcs
-                },
-                'contact_meches'        : {
-                    'TELECOM_NUMBER'    : telecoms , 
-                    'EMAIL_ADDRESS'     : [
-                        {
-                            'pcm_id'                :   email_obj.pcm_id,
-                            'value'                 :   email_obj.contact_mech.info_string,
-                            'contact_mech_id'       :   email_obj.contact_mech.contact_mech_id,
-                            'contact_mech_type_id'  :   email_obj.contact_mech.contact_mech_type_id,
-                        }   for email_obj in pcm_email
-                    ],
-                
-                },
-            },
-            "apiresponse": {
-                "type": "OK",
-                "severity": "INFO",
-                "message": "Operation completed successfully.",
-                "code": "0000"
-            }
-        }
-
+        
+        # print(dir(user.party))
+        res = get_user_info(user_login_id=user.user_login_id)
 
     except Exception as e:
         res = handle_exception(e)
@@ -130,7 +74,7 @@ def remove_account(req):
         if (user.is_anonymous):
             raise Exception('HANDLED:User must be logged-in to use this API.')
 
-        user.is_active = False
+        user.is_deleted = True
         user.save()
         authentication.logout(req)
         res = SuccessResp
@@ -151,10 +95,10 @@ def forgot_password(req):
         if (username == None) or (username == ''):
             raise Exception("HANDLED:username is required.")
 
-        if not UserLogin.objects.filter(Q(username=username) | Q(user_login_id=username)).exists():
+        if not UserLogin.objects.filter(Q(username=username) | Q(user_login_id=username) , is_deleted=False).exists():
             raise Exception("HANDLED:User not exists.")
         
-        user_obj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username))
+        user_obj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username) , Q(is_deleted=False))
         password = generate_password()
         user_obj.set_password(password)
         user_obj.save()
@@ -223,11 +167,13 @@ def login_user(req):
         if req.user.is_authenticated : 
             raise Exception("HANDLED: User is already logged-in.")
 
-        if not UserLogin.objects.filter(Q(username=username) | Q(user_login_id=username)).exists():
+        if not UserLogin.objects.filter(Q(username=username) | Q(user_login_id=username), is_deleted = False).exists():
             raise Exception("HANDLED: User not found.")
 
-        userObj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username))
+        userObj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username), is_deleted = False)
         if (userObj.is_active == False): raise Exception("HANDLED: Account is deactivated.")
+
+        # if (userObj.is_deleted == True): raise Exception("HANDLED: Account is Deleted.")
 
         user    = authentication.authenticate(req,user_login_id=userObj.user_login_id, password=password)
         if user is  None: raise Exception("HANDLED: Invalid Credentials")
@@ -258,144 +204,57 @@ def login_user(req):
 @require_http_methods(['POST',])
 def create_user(req):
     try:
-        params          = handle_params(req)
-        user_login_id   = gen_id('UL_',16)
-        username        = params.get("username", user_login_id )
-        password        = params.get("password" , generate_password(10))
-        firstname       = str(params.get("firstname" , ''))
-        lastname        = str(params.get("lastname" , ''))
-        middlename      = str(params.get("middlename" , ''))
-        marital_status  = str(params.get("marital_status" ,'SINGLE')).upper()
-        gender          = str(params.get("gender", '' )).lower()
-        bio             = params.get("bio", None )
-        birth_date      = params.get("dob", None )
-        marrige_date    = params.get("marrige_date" ,None)
-        email           = params.get("email", None )
-        mobile          = params.get("mobile", None )
-        initials        = get_initials(' '.join([firstname, lastname]))
+        params              = handle_params(req)
+        passwd              = params.get('password', str(generate_password(20)))
+        login_id            = gen_id(initials='UL_',length=20)
+        params['username']  = params.get('username', str(params.get('mobile',gen_id(length=20))))
 
-        if (firstname == '' or email == None):
-            raise Exception('HANDLED:email/name is required to create account.')
+        if (UserLogin.objects.filter(username = params.get('username'), is_deleted = False).exists()):
+            raise Exception ("HANDLED: Username is not available.")
 
-        if UserLogin.objects.filter(username=username).exists():
-            raise Exception('HANDLED:Username is not available.')
+        user = UserLogin(user_login_id = login_id)
+        if ('username' in params.keys()):
+            user.username = params.get('username')
 
+        user.set_password(passwd)
+        user.save()
 
-        if gender == 'male':
-            gender_id = 'MALE'
-            salutation = 'MR'
+        res = modify_user(user_login_id=login_id, update_profile=False, **params)
 
-        elif gender == 'female':
-            gender_id = 'FEMALE'
-            salutation = 'MR'
-
-        else:
-            gender_id = None
-            salutation = None
-
-        if (marital_status == 'MARRIED') and marrige_date == None:
-            raise Exception("HANDLED:marrige_date parameter is required when you choose marital_status as MARRIED.")
-
-        party_id = gen_id('PR_',15)
-        party_payload = {
-            'party_id'          : party_id ,
-            'party_type_id'     : 'PERSON',
-            'description'       : f"Party created for PERSON with PartyID: {party_id}",
-            'status_id'         : 'PARTY_ENABLED',
-            'created_date'      : now(),
-        }
-        Party.objects.create(**party_payload)
-        ul_payload = {
-            'user_login_id'     : user_login_id,
-            'username'          : username,
-            'first_name'        : firstname,
-            'last_name'         : lastname,
-            'middle_name'       : middlename,
-            'initials'          : initials,
-            'birth_date'        : birth_date,
-            'salutation'        : salutation,
-            'gender_id'         : gender_id,
-            'marital_status_id' : marital_status,
-            'marrige_date'      : marrige_date,    
-            'party_id'          : party_id,
-            'is_active'         : False,
-        }
-
-        if bio   != None:   ul_payload['bio'] = bio
-        if email != None:   ul_payload['email'] = email
-
-        ul_obj = UserLogin.objects.create(**ul_payload)
-        ul_obj.set_password(password)
-        ul_obj.save()
-
-        if (email != None) and (email != ''):
-            if not (checkEmail(email)):
-                raise Exception("HANDLED:{} is not a valid mail.".format(email))
-            
-            create_contact_mech(contact_type="EMAIL_ADDRESS", party_id=party_id, purpose='PRIMARY_EMAIL', value=email)
-
-        if (mobile != None) and (mobile != ''):
-            if not (checkMobile(mobile)):
-                raise Exception("HANDLED:{} is not a valid mobile number.".format(mobile))
-            
-            create_contact_mech(contact_type="TELECOM_NUMBER", party_id=party_id, purpose='PRIMARY_PHONE', value=mobile)
-
-
-        activate_url = f"{settings.BASE_URL}/users/activate/{ul_obj.user_login_id}/{generate_url_hash(ul_obj.user_login_id)}"
-        res = SuccessResp
-        res['record'] = {
-            'user_id'       : user_login_id,
-            'party_id'      : party_id,
-            'username'      : username,
-            'activate_url'  : activate_url,
-        }
-
+        activate_url = f"{settings.BASE_URL}/users/activate/{login_id}/{generate_url_hash(login_id)}"
+        res['record']['activation_url'] = activate_url
+        # logger.debug ("User created or updated with username:'%s' and password: '%s'", login_id, passwd)
 
     except Exception as e:
         res = handle_exception(e)
 
-    return JsonResponse(res)
-
+    return JsonResponse(res, safe=False, status=200)
 
 
 @csrf_exempt
 @require_http_methods(['POST',])
+# @group_required(('HR_Group'),login_url='login/')
 def update_user(req):
     try:
-        params          = handle_params(req)
-
-        if (req.user.is_anonymous):
-            raise Exception('HANDLED:user must be logged-in to use this API.')
+        params   = handle_params(req)
         
-        user = req.user
-        user.username               = params.get("username", user.username )
-        user.first_name             = params.get("firstname", user.first_name )
-        user.last_name              = params.get("lastname", user.last_name )
-        user.middle_name            = params.get("middlename", user.middle_name )
-        user.birth_date             = params.get("dob", user.birth_date )
-        user.salutation             = params.get("salutation", user.salutation )
-        user.marrige_date           = params.get("marrige_date", user.marrige_date )
-        user.bio                    = params.get("bio", user.bio )
-        user.gender_id              = params.get("gender", user.gender_id )
-        user.marital_status_id      = str(params.get("marital_status", user.marital_status_id )).upper()
-        user.updated_stamp          = now() 
+        if req.user.is_anonymous:
+            raise Exception("HANDLED: login is required to update account. ")
+            
+        param_login_id = params.get('user_login_id', req.user.user_login_id)
+        if 'user_login_id' in params.keys():
+            params.pop('user_login_id')
 
-        email                       = params.get("email",None)
-        mobile                      = params.get("mobile",None)
+        if (not req.user.is_superuser) and (not req.user.groups.filter(name="HR_Group").exists() ) and (param_login_id != req.user.user_login_id):
+            raise Exception("HANDLED: You are not authorized to update someone's profile")
 
-        if (email != None) and (email != ''):
-            create_contact_mech(contact_type='EMAIL_ADDRESS', party_id=user.party_id, purpose='PRIMARY_EMAIL', value=email)
-
-        if (mobile != None) and (mobile != ''):
-            create_contact_mech(contact_type='TELECOM_NUMBER', party_id=user.party_id, purpose='PRIMARY_PHONE', value=mobile)
-
-        user.save()        
-        res = SuccessResp
+        else:
+            res = modify_user(user_login_id=param_login_id, update_profile=True,  **params)
 
     except Exception as e:
         res = handle_exception(e)
 
-    return JsonResponse(res)
+    return JsonResponse(res,status=200)
 
 
 
