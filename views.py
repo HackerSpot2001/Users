@@ -6,7 +6,7 @@ from .models import UserLogin, UserLoginHistory
 from django.utils.timezone import now 
 from django.db.models import Q 
 from django.conf import settings
-from .views_helpers import create_content, get_user_info, modify_user
+from .views_helpers import create_content, get_user_info, modify_user, create_party_group
 from Helpers.Utils import handle_exception, SuccessResp, handle_params, gen_id, generate_password, generate_url_hash
 from Helpers.Utils import get_thumbnails_from_img, save_file_to_filesystem
 from json import dumps
@@ -27,6 +27,7 @@ def logoff(req):
     return JsonResponse(res)
 
 
+
     
 @require_http_methods(['GET',])
 def get_profile(req):
@@ -42,6 +43,7 @@ def get_profile(req):
         res = handle_exception(e)
 
     return JsonResponse(res)
+
 
 
 
@@ -67,6 +69,7 @@ def activate_acc(req,user_login_id,uaid):
 
 
 
+
 @require_http_methods(['GET',])
 def remove_account(req):
     try:
@@ -84,6 +87,7 @@ def remove_account(req):
 
         
     return JsonResponse(res,safe=False)
+
 
 
 
@@ -123,6 +127,7 @@ def forgot_password(req):
 
 
 
+
 @require_http_methods(['GET',])
 def change_password(req):
     try:
@@ -150,6 +155,7 @@ def change_password(req):
 
         
     return JsonResponse(res,safe=False)
+
 
 
 
@@ -200,6 +206,7 @@ def login_user(req):
 
 
 
+
 @csrf_exempt
 @require_http_methods(['POST',])
 def create_user(req):
@@ -231,6 +238,8 @@ def create_user(req):
     return JsonResponse(res, safe=False, status=200)
 
 
+
+
 @csrf_exempt
 @require_http_methods(['POST',])
 # @group_required(('HR_Group'),login_url='login/')
@@ -258,6 +267,7 @@ def update_user(req):
 
 
 
+
 @csrf_exempt
 @require_http_methods(['POST',])
 def update_profile_pic(req):
@@ -277,19 +287,20 @@ def update_profile_pic(req):
                 'thumbs_img'    : thumbs,
             }
             
-            create_content(
-                content_type='IMAGE_FRAME',
-                party_id=user.party_id,
-                content_name=save_obj['filename'],
-                description='Profile pic uploaded to storage system',
-                mime_type_id=save_obj['mime_type'],
-                created_by_user_login=user.user_login_id,
-                updated_by_user_login=user.user_login_id,
-                object_info=dumps(object_info),
-                party_content_type_id='PROFILE_PIC',
-                service_name=save_obj['original_filename'],
-                data_resource_name="Recieved file: {}".format(save_obj['original_filename']) ,
-            )
+            content_payload = {
+                'content_type'          :   'IMAGE_FRAME',
+                'party_id'              :   user.party_id,
+                'content_name'          :   save_obj['filename'],
+                'description'           :   'Profile pic uploaded to storage system',
+                'mime_type_id'          :   save_obj['mime_type'],
+                'created_by_user_login' :   user.user_login_id,
+                'updated_by_user_login' :   user.user_login_id,
+                'object_info'           :   dumps(object_info),
+                'party_content_type_id' :   'PROFILE_PIC',
+                'service_name'          :   save_obj['original_filename'],
+                'data_resource_name'    :   "Recieved file: {}".format(save_obj['original_filename']) ,
+            }
+            create_content(**content_payload)
             
         res = SuccessResp
 
@@ -297,3 +308,69 @@ def update_profile_pic(req):
         res = handle_exception(e)
 
     return JsonResponse(res)
+
+
+
+
+
+@csrf_exempt
+@require_http_methods(['POST',])
+def createPartyGroup(req):
+    try:
+        user            = req.user
+        params          = handle_params(req)
+        files           = dict(req.FILES)
+        group_name      = params.get('group_name', None)
+        company_phone   = params.get('company_phone', None)
+        company_email   = params.get('company_email', None)
+        company_logo    = files.get('company_logo', None)
+        
+        if (user.is_anonymous):
+            raise Exception('HANDLED:user must be logged-in to use this API.')
+            
+
+        if (group_name == None):
+            raise Exception('HANDLED:company_name is required.')
+
+        pg_payload = {
+            'group_name'            : group_name,
+            'office_site_name'      : params.get('office_site_name', None),
+            'comments'              : params.get('comments', None),
+            'person_party_id'       : user.party_id ,
+            'company_phone'         : company_phone,
+            'company_email'         : company_email,
+        }
+
+        party_group = create_party_group(**pg_payload)
+
+        if (company_logo != None):
+            for pp in company_logo:
+                save_obj    = save_file_to_filesystem(file=pp,initals='CLG_',base_path=settings.BASE_DIR)
+                object_info = { 'original_img'  : save_obj }
+                
+                content_payload = {
+                    'content_type'          :   'IMAGE_FRAME',
+                    'party_id'              :   party_group['party_group_id'],
+                    'content_name'          :   save_obj['filename'],
+                    'mime_type_id'          :   save_obj['mime_type'],
+                    'description'           :   'Company Logo',
+                    'created_by_user_login' :   user.user_login_id,
+                    'updated_by_user_login' :   user.user_login_id,
+                    'object_info'           :   dumps(object_info),
+                    'party_content_type_id' :   'LGOIMGURL',
+                    'service_name'          :   save_obj['original_filename'],
+                    'data_resource_name'    :   "Recieved file: {}".format(save_obj['original_filename']) ,
+                }
+                create_content(**content_payload)
+
+        
+
+            
+        res = SuccessResp
+
+    except Exception as e:
+        res = handle_exception(e)
+
+    return JsonResponse(res)
+
+

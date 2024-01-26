@@ -11,5 +11,6 @@ urlpatterns = [
     path('create_user', view=create_user, name='Create User'),
     path('update_user', view=update_user, name='Update User'),
     path('update_profile_pic', view=update_profile_pic, name='Update User Pic'),
+    path('create_party_group', view=createPartyGroup, name='createPartyGroup'),
     path('activate/<str:user_login_id>/<str:uaid>', view=activate_acc, name='Activate Account'),
 ]
