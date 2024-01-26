@@ -104,6 +104,45 @@ class Party(models.Model):
         return self.party_id    
     
 
+    def getAllTelecomMechs(self):
+        return self.partycontactmech_set.filter(verified='Y', thru_date=None, contact_mech__contact_mech_type_id='TELECOM_NUMBER'  ).select_related('contact_mech').all()
+
+    def allEmailCMs(self):
+        return self.partycontactmech_set.filter( verified='Y', thru_date=None, contact_mech__contact_mech_type_id='EMAIL_ADDRESS'  ).select_related('contact_mech').all()
+
+
+    def allEmails(self):
+        emails = [ 
+            {
+                'pcm_id'                :   email_obj.pcm_id,
+                'value'                 :   email_obj.contact_mech.info_string,
+                'contact_mech_id'       :   email_obj.contact_mech.contact_mech_id,
+                'contact_mech_type_id'  :   email_obj.contact_mech.contact_mech_type_id,
+                'cm_purpose_type_id'    :   email_obj.cm_purpose_type_id,
+            } for email_obj in self.allEmailCMs()
+        ]
+
+        return emails
+
+
+    def getAllTelecomNumbers(self):
+        telecoms = []
+        for pcm_obj in self.getAllTelecomMechs():
+            data = {
+                'pcm_id'                :   pcm_obj.pcm_id,
+                'contact_mech_id'       :   pcm_obj.contact_mech.contact_mech_id,
+                'contact_mech_type_id'  :   pcm_obj.contact_mech.contact_mech_type_id,
+                'cm_purpose_type_id'    :   pcm_obj.cm_purpose_type_id,
+            }
+            contact_id              = pcm_obj.contact_mech_id
+            telecom_obj             = TelecomNumber.objects.get(contact_mech_id=contact_id)
+            data['value']           = telecom_obj.contact_number
+            data['country_code']    = telecom_obj.country_code
+            telecoms.append(data) 
+
+        return telecoms
+    
+
     class Meta:
         managed = True
         db_table = 'party'
@@ -659,64 +698,151 @@ class GeoType(models.Model):
 
 
 
-class PartyClassification(models.Model):
-    party_classification_id     = models.CharField(primary_key=True, max_length=primary_max_len, default=gen_party_classification)
-    party                       = models.ForeignKey(Party, models.DO_NOTHING)  # The composite primary key (party_id, party_classification_group_id, from_date) found, that is not supported. The first column is selected.
-    party_classification_group  = models.ForeignKey('PartyClassificationGroup', models.DO_NOTHING)
+class PartyRelationship(models.Model):
+    party_relationship_id       = models.CharField(max_length=primary_max_len, primary_key=True)
+    party_role_from             = models.ForeignKey('PartyRole', models.DO_NOTHING, db_column='party_role_from', related_name='partyrelationship_party_role_from_set')
+    party_role_to               = models.ForeignKey('PartyRole', models.DO_NOTHING, db_column='party_role_to', related_name='partyrelationship_party_role_to_set')
+    party_relationship_type     = models.ForeignKey('PartyRelationshipType', models.DO_NOTHING, null=False)
+    status                      = models.ForeignKey('StatusItem', models.DO_NOTHING, blank=True, null=True)
+    relationship_name           = models.CharField(max_length=255, blank=True, null=True)
+    position_title              = models.CharField(max_length=100, blank=True, null=True)
     from_date                   = models.DateTimeField(auto_now_add=True)
     thru_date                   = models.DateTimeField(blank=True, null=True)
+    comments                    = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp               = models.DateTimeField(auto_now_add=True)
+    created_stamp               = models.DateTimeField(auto_now_add=True)
+    # security_group              = models.ForeignKey('SecurityGroup', models.DO_NOTHING, blank=True, null=True)
+    # priority_type               = models.ForeignKey('PriorityType', models.DO_NOTHING, blank=True, null=True)
+    # permissions_enum_id         = models.CharField(max_length=20, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.party_relationship_id} | {self.party_role_from} | {self.party_role_to} | {self.party_relationship_type}"
+
+
+    class Meta:
+        managed = True
+        db_table = 'party_relationship'
+        unique_together = (('party_role_from', 'party_role_to', 'party_relationship_type', 'from_date'),)
+        # unique_together = (('party_role_from', 'party_role_to', 'party_relationship_type', 'from_date'),('party_role_from','party_relationship_type'), ( 'party_role_to','party_relationship_type'))
+        verbose_name_plural = 'PartyRelationship'
+
+
+class PartyRelationshipType(models.Model):
+    party_relationship_type_id  = models.CharField(primary_key=True, max_length=primary_max_len)
+    parent_type                 = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    has_table                   = models.CharField(max_length=1, blank=True, null=True)
+    party_relationship_name     = models.CharField(max_length=100, blank=True, null=True)
+    description                 = models.CharField(max_length=255, blank=True, null=True)
+    role_type_id_valid_from     = models.ForeignKey('RoleType', models.DO_NOTHING, db_column='role_type_id_valid_from', blank=True, null=True)
+    role_type_id_valid_to       = models.ForeignKey('RoleType', models.DO_NOTHING, db_column='role_type_id_valid_to', related_name='partyrelationshiptype_role_type_id_valid_to_set', blank=True, null=True)
     updated_stamp               = models.DateTimeField(auto_now_add=True)
     created_stamp               = models.DateTimeField(auto_now_add=True)
 
 
-
     def __str__(self):
-        return f"{self.party_id} | {self.party_classification_group_id}"
-
+        return self.party_relationship_type_id
 
     class Meta:
-        managed     = True
-        db_table    = 'party_classification'
-        unique_together = (('party', 'party_classification_group', 'from_date'),)
-        verbose_name_plural = 'PartyClassification'
+        managed = True
+        db_table = 'party_relationship_type'
+        verbose_name_plural = 'PartyRelationshipType'
 
 
 
-class PartyClassificationGroup(models.Model):
-    party_classification_group_id   = models.CharField(primary_key=True, max_length=primary_max_len)
-    party_classification_type       = models.ForeignKey('PartyClassificationType', models.DO_NOTHING, blank=True, null=True)
-    parent_group                    = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
-    description                     = models.CharField(max_length=255, blank=True, null=True)
-    updated_stamp                   = models.DateTimeField(auto_now_add=True)
-    created_stamp                   = models.DateTimeField(auto_now_add=True)
+class PartyRole(models.Model):
+    party_role_id       = models.CharField(primary_key=True, max_length=primary_max_len,default=gen_party_role)
+    party               = models.ForeignKey(Party       , models.DO_NOTHING)  # The composite primary key (party_id, role_type_id) found, that is not supported. The first column is selected.
+    role_type           = models.ForeignKey('RoleType'  , models.DO_NOTHING)
+    updated_stamp       = models.DateTimeField(auto_now_add=True)
+    created_stamp       = models.DateTimeField(auto_now_add=True)
 
 
     def __str__(self):
-        return f"{self.party_classification_group_id} | {self.party_classification_type_id}"
+        return f"{self.party_id} | {self.role_type_id}"
 
 
     class Meta:
-        managed     = True
-        db_table    = 'party_classification_group'
-        unique_together = (('party_classification_group_id', 'party_classification_type'),)
-        verbose_name_plural = 'PartyClassificationGroup'
+        managed = True
+        db_table = 'party_role'
+        unique_together = (('party', 'role_type'),)
+        verbose_name_plural = 'PartyRole'
 
 
 
-class PartyClassificationType(models.Model):
-    party_classification_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
-    parent_type                     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
-    has_table                       = models.CharField(max_length=1, blank=True, null=True)
-    description                     = models.CharField(max_length=255, blank=True, null=True)
-    updated_stamp                   = models.DateTimeField(auto_now_add=True)
-    created_stamp                   = models.DateTimeField(auto_now_add=True)
+class RoleType(models.Model):
+    role_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
+    parent_type     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    has_table       = models.CharField(max_length=1, blank=True, null=True)
+    description     = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp   = models.DateTimeField(auto_now_add=True)
+    created_stamp   = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.party_classification_type_id
-
+        return self.role_type_id
 
     class Meta:
-        managed     = True
-        db_table    = 'party_classification_type'
-        verbose_name_plural = 'PartyClassificationType'
+        managed = True
+        db_table = 'role_type'
+        verbose_name_plural = 'RoleType'
+
+
+
+# class PartyClassification(models.Model):
+#     party_classification_id     = models.CharField(primary_key=True, max_length=primary_max_len, default=gen_party_classification)
+#     party                       = models.ForeignKey(Party, models.DO_NOTHING)  # The composite primary key (party_id, party_classification_group_id, from_date) found, that is not supported. The first column is selected.
+#     party_classification_group  = models.ForeignKey('PartyClassificationGroup', models.DO_NOTHING)
+#     from_date                   = models.DateTimeField(auto_now_add=True)
+#     thru_date                   = models.DateTimeField(blank=True, null=True)
+#     updated_stamp               = models.DateTimeField(auto_now_add=True)
+#     created_stamp               = models.DateTimeField(auto_now_add=True)
+
+
+#     def __str__(self):
+#         return f"{self.party_id} | {self.party_classification_group_id}"
+
+
+#     class Meta:
+#         managed     = True
+#         db_table    = 'party_classification'
+#         unique_together = (('party', 'party_classification_group', 'from_date'),)
+#         verbose_name_plural = 'PartyClassification'
+
+
+
+# class PartyClassificationGroup(models.Model):
+#     party_classification_group_id   = models.CharField(primary_key=True, max_length=primary_max_len)
+#     party_classification_type       = models.ForeignKey('PartyClassificationType', models.DO_NOTHING, blank=True, null=True)
+#     parent_group                    = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+#     description                     = models.CharField(max_length=255, blank=True, null=True)
+#     updated_stamp                   = models.DateTimeField(auto_now_add=True)
+#     created_stamp                   = models.DateTimeField(auto_now_add=True)
+
+
+#     def __str__(self):
+#         return f"{self.party_classification_group_id} | {self.party_classification_type_id}"
+
+
+#     class Meta:
+#         managed     = True
+#         db_table    = 'party_classification_group'
+#         unique_together = (('party_classification_group_id', 'party_classification_type'),)
+#         verbose_name_plural = 'PartyClassificationGroup'
+
+
+# class PartyClassificationType(models.Model):
+#     party_classification_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
+#     parent_type                     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+#     has_table                       = models.CharField(max_length=1, blank=True, null=True)
+#     description                     = models.CharField(max_length=255, blank=True, null=True)
+#     updated_stamp                   = models.DateTimeField(auto_now_add=True)
+#     created_stamp                   = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return self.party_classification_type_id
+
+
+#     class Meta:
+#         managed     = True
+#         db_table    = 'party_classification_type'
+#         verbose_name_plural = 'PartyClassificationType'
 
