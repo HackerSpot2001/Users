@@ -1,0 +1,244 @@
+{
+    "client": "Thunder Client",
+    "collectionName": "Users",
+    "dateExported": "2024-01-26T09:58:29.723Z",
+    "version": "1.1",
+    "folders": [
+        {
+            "_id": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Accounts",
+            "containerId": "",
+            "created": "2024-01-15T17:41:23.674Z",
+            "sortNum": 10000
+        }
+    ],
+    "requests": [
+        {
+            "_id": "cea48f13-88d5-4482-b963-bc3fb104e16c",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Create User",
+            "url": "/users/create_user",
+            "method": "POST",
+            "sortNum": 5000,
+            "created": "2024-01-18T17:07:36.270Z",
+            "modified": "2024-01-24T16:27:03.115Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n    \"salutation\": \"MR\",\n    \"username\": \"cveracruysse0\",\n    \"first_name\": \"Creight\",\n    \"middle_name\": \"Vala\",\n    \"last_name\": \"Veracruysse\",\n    \"email\": \"cveracruysse0@example.com\",\n    \"gender\": \"Male\",\n    \"marital_status\": \"divorced\",\n    \"dob\": \"1979-12-04\",\n    \"deceased_date\": \"2004-09-26\",\n    \"bio\": \"Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.\",\n    \"marrige_date\": \"1983-12-25\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "c49bfce4-67fc-4f73-b8a6-442835fc9c4e",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Activate Account",
+            "url": "/users/activate/UL_GFKKHLIDS91Q4OFE0700/3ea4b240c9c271df6e10264c0888fff6",
+            "method": "GET",
+            "sortNum": 6250,
+            "created": "2024-01-21T01:50:53.678Z",
+            "modified": "2024-01-25T16:53:27.593Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "553d6ea3-9883-4766-8a01-606f7fd4ec83",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Forgot Password",
+            "url": "/users/forgot_password?username=cveracruysse0",
+            "method": "GET",
+            "sortNum": 7500,
+            "created": "2024-01-21T02:55:49.692Z",
+            "modified": "2024-01-24T16:45:09.160Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "username",
+                    "value": "cveracruysse0",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "2de56dfa-bfe9-4a10-9500-a253bb78814e",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Login User",
+            "url": "/users/login_user",
+            "method": "POST",
+            "sortNum": 20000,
+            "created": "2024-01-15T17:41:36.398Z",
+            "modified": "2024-01-25T16:53:41.399Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"username\":\"cveracruysse0\",\n  \"password\":\"4I28SHUVBSQ2IH8\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "ac236118-6625-4bba-a4b5-1c31b428b8e0",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Log-out User",
+            "url": "/users/logoff",
+            "method": "GET",
+            "sortNum": 30000,
+            "created": "2024-01-15T18:08:41.935Z",
+            "modified": "2024-01-16T16:51:10.004Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "d3b443dd-2b57-44ed-ac42-8ad2d2ca4be8",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Get Profile",
+            "url": "/users/profile",
+            "method": "GET",
+            "sortNum": 40000,
+            "created": "2024-01-16T17:50:56.138Z",
+            "modified": "2024-01-17T15:11:10.881Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "e0545c23-a6be-4dd7-98e5-dba122ac4ceb",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Remove Account",
+            "url": "/users/remove",
+            "method": "GET",
+            "sortNum": 70000,
+            "created": "2024-01-21T02:51:20.516Z",
+            "modified": "2024-01-21T02:52:25.416Z",
+            "headers": [],
+            "params": [],
+            "tests": []
+        },
+        {
+            "_id": "472c0319-da83-468f-b1bd-b6c108d03d15",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Change Password",
+            "url": "/users/change_password?password=1234",
+            "method": "GET",
+            "sortNum": 90000,
+            "created": "2024-01-21T03:46:32.873Z",
+            "modified": "2024-01-21T03:48:04.391Z",
+            "headers": [],
+            "params": [
+                {
+                    "name": "password",
+                    "value": "1234",
+                    "isPath": false
+                }
+            ],
+            "tests": []
+        },
+        {
+            "_id": "743b64cf-d6f0-4917-bc5e-1f4d7c5fbf40",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Update User",
+            "url": "/users/update_user",
+            "method": "POST",
+            "sortNum": 90000,
+            "created": "2024-01-21T12:55:51.642Z",
+            "modified": "2024-01-24T17:21:52.989Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n  \"email\":\"example@mail.com\",\n  \"phone\":\"9818183950\",\n  \"whastapp\":\"9818183950\",\n  \"gender\":\"FEMALE\"\n}",
+                "form": []
+            },
+            "tests": []
+        },
+        {
+            "_id": "5fe0997d-d63b-4f64-90c5-5510eec54d5d",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Update Profile Pic",
+            "url": "/users/update_profile_pic",
+            "method": "POST",
+            "sortNum": 100000,
+            "created": "2024-01-22T16:44:15.550Z",
+            "modified": "2024-01-22T16:50:48.171Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "formdata",
+                "raw": "",
+                "form": [],
+                "files": [
+                    {
+                        "name": "profile_pic",
+                        "value": "/home/hacker/Documents/avataaars.png"
+                    },
+                    {
+                        "name": "profile_pic",
+                        "value": "/home/hacker/Downloads/DownloadPDFs/main.py",
+                        "isDisabled": true
+                    }
+                ]
+            },
+            "tests": []
+        },
+        {
+            "_id": "66e5407c-f179-49d3-8ab5-d4bed0e40e27",
+            "colId": "04089ed4-fdea-497b-a49c-663ea0a54fe5",
+            "containerId": "bb9e30d1-4704-4193-a051-4f62319de2bd",
+            "name": "Create Party Group",
+            "url": "/users/create_party_group",
+            "method": "POST",
+            "sortNum": 110000,
+            "created": "2024-01-26T03:11:01.976Z",
+            "modified": "2024-01-26T07:42:26.715Z",
+            "headers": [],
+            "params": [],
+            "body": {
+                "type": "formdata",
+                "raw": "",
+                "form": [
+                    {
+                        "name": "group_name",
+                        "value": "Rummy Enter Prices"
+                    },
+                    {
+                        "name": "company_email",
+                        "value": "mail@company.com"
+                    },
+                    {
+                        "name": "company_phone",
+                        "value": "9643561451"
+                    }
+                ],
+                "files": [
+                    {
+                        "name": "company_logo",
+                        "value": "/home/hacker/Documents/avataaars.png"
+                    }
+                ]
+            },
+            "tests": []
+        }
+    ],
+    "settings": {
+        "docs": "### Users API Documentation",
+        "options": {
+            "baseUrl": "http://localhost:8000"
+        }
+    }
+}
