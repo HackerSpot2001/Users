@@ -1,0 +1,11 @@
+begin work;
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('ELECTRONIC_ADDRESS',NULL,'N','Electronic Address','2023-07-13 23:14:52.315+05:30','2023-07-13 23:14:52.315+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('POSTAL_ADDRESS',NULL,'Y','Postal Address','2023-07-13 23:14:52.317+05:30','2023-07-13 23:14:52.317+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('TELECOM_NUMBER',NULL,'Y','Phone Number','2023-07-13 23:14:52.323+05:30','2023-07-13 23:14:52.323+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('EMAIL_ADDRESS','ELECTRONIC_ADDRESS','N','Email Address','2023-07-13 23:14:52.325+05:30','2023-07-13 23:14:52.325+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('IP_ADDRESS','ELECTRONIC_ADDRESS','N','Internet IP Address','2023-07-13 23:14:52.327+05:30','2023-07-13 23:14:52.327+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('DOMAIN_NAME','ELECTRONIC_ADDRESS','N','Internet Domain Name','2023-07-13 23:14:52.33+05:30','2023-07-13 23:14:52.33+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('WEB_ADDRESS','ELECTRONIC_ADDRESS','N','Web URL/Address','2023-07-13 23:14:52.332+05:30','2023-07-13 23:14:52.332+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('INTERNAL_PARTYID','ELECTRONIC_ADDRESS','N','Internal Note via partyId','2023-07-13 23:14:52.333+05:30','2023-07-13 23:14:52.333+05:30');
+INSERT INTO hrms.contact_mech_type (contact_mech_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('LDAP_ADDRESS','ELECTRONIC_ADDRESS','N','LDAP URL','2023-07-13 23:15:00.886+05:30','2023-07-13 23:15:00.886+05:30');
+commit;

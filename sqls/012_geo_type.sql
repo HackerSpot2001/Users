@@ -1,0 +1,15 @@
+begin work;
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('CITY',NULL,'N','City','2023-07-13 23:14:39.753+05:30','2023-07-13 23:14:39.753+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('GROUP',NULL,'N','Group','2023-07-13 23:14:39.756+05:30','2023-07-13 23:14:39.756+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('STATE',NULL,'N','State','2023-07-13 23:14:39.758+05:30','2023-07-13 23:14:39.758+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('POSTAL_CODE',NULL,'N','Postal Code','2023-07-13 23:14:39.76+05:30','2023-07-13 23:14:39.76+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('COUNTRY',NULL,'N','Country','2023-07-13 23:14:39.762+05:30','2023-07-13 23:14:39.762+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('COUNTY',NULL,'N','County','2023-07-13 23:14:39.764+05:30','2023-07-13 23:14:39.764+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('COUNTY_CITY',NULL,'N','County-City','2023-07-13 23:14:39.766+05:30','2023-07-13 23:14:39.766+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('MUNICIPALITY',NULL,'N','Municipality','2023-07-13 23:14:39.768+05:30','2023-07-13 23:14:39.768+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('PROVINCE',NULL,'N','Province','2023-07-13 23:14:39.77+05:30','2023-07-13 23:14:39.77+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('REGION',NULL,'N','Region','2023-07-13 23:14:39.771+05:30','2023-07-13 23:14:39.771+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('TERRITORY',NULL,'N','Territory','2023-07-13 23:14:39.773+05:30','2023-07-13 23:14:39.773+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('SALES_TERRITORY','TERRITORY','N','Sales Territory','2023-07-13 23:14:39.774+05:30','2023-07-13 23:14:39.774+05:30');
+INSERT INTO hrms.geo_type (geo_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('SERVICE_TERRITORY','TERRITORY','N','Service Territory','2023-07-13 23:14:39.776+05:30','2023-07-13 23:14:39.776+05:30');
+commit;
