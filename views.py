@@ -166,7 +166,6 @@ def login_user(req):
         params      = handle_params(req)
         username    = params.get("username", None )
         password    = params.get("password" , None)
-
         if username == None or password == None:
             raise Exception("HANDLED: Username and Password is required to login.")
 
@@ -179,7 +178,7 @@ def login_user(req):
         userObj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username), is_deleted = False)
         if (userObj.is_active == False): raise Exception("HANDLED: Account is deactivated.")
 
-        # if (userObj.is_deleted == True): raise Exception("HANDLED: Account is Deleted.")
+        if (userObj.is_deleted == True): raise Exception("HANDLED: Account does not exists.")
 
         user    = authentication.authenticate(req,user_login_id=userObj.user_login_id, password=password)
         if user is  None: raise Exception("HANDLED: Invalid Credentials")

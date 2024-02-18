@@ -125,6 +125,7 @@ def modify_user(user_login_id, update_profile=False, **params):
     phone               = params.get('phone',       None)
     whastapp_number     = params.get('whastapp',    None)
     party_group         = params.get('party_group', None)
+    utype               = params.get('utype', None)
     gender              = str(params.get("gender","")).upper()
     marital_status      = str(params.get('marital_status')).upper()
 
@@ -172,6 +173,9 @@ def modify_user(user_login_id, update_profile=False, **params):
     user_args['updated_stamp']   = now()
     UserLogin.objects.filter(user_login_id=user_login_id).update(**user_args)
     # logger.debug ("party created with party_id:'%s'", party.party_id)
+
+    if (str(utype).lower() == 'EMP'):
+        add_reln_ship(party_from=party_id, party_to='Company',reln_type='EMPLOYMENT', role_to='INTERNAL_ORGANIZATIO',role_from='EMPLOYEE', status='PARTYREL_CREATED')
 
 
     if (email_id != None) and (email_id != "") and (checkEmail(email_id)):
