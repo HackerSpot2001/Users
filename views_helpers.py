@@ -127,7 +127,7 @@ def modify_user(user_login_id, update_profile=False, **params):
     party_group         = params.get('party_group', None)
     utype               = params.get('utype', None)
     gender              = str(params.get("gender","")).upper()
-    marital_status      = str(params.get('marital_status')).upper()
+    marital_status      = str(params.get('marital_status','')).upper()
 
     user_args = {
         # "is_superuser"      : params.get('is_superuser'     , user_obj.is_superuser),

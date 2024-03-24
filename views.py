@@ -3,13 +3,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from django.contrib import auth as authentication 
 from .models import UserLogin, UserLoginHistory
+from django.shortcuts import redirect
 from django.utils.timezone import now 
 from django.db.models import Q 
-from django.conf import settings
 from .views_helpers import create_content, get_user_info, modify_user, create_party_group
 from Helpers.Utils import handle_exception, SuccessResp, handle_params, gen_id, generate_password, generate_url_hash
 from Helpers.Utils import get_thumbnails_from_img, save_file_to_filesystem
 from json import dumps
+from django.conf import settings
 
 
 # ALL Get Requests
@@ -55,12 +56,13 @@ def activate_acc(req,user_login_id,uaid):
             raise Exception("HANDLED:User not identified.")
         
         ul_obj = UserLogin.objects.get(user_login_id=user_login_id)
-        if (ul_obj.is_active == True):
-            raise Exception('HANDLED:User is already activated')
-
         ul_obj.is_active = True
         ul_obj.save()
-        res = SuccessResp
+        return redirect("/login")
+        # if (ul_obj.is_active == True):
+        #     raise Exception('HANDLED:User is already activated')
+
+        # res = SuccessResp
 
 
     except Exception as e:
@@ -103,6 +105,9 @@ def forgot_password(req):
             raise Exception("HANDLED:User not exists.")
         
         user_obj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username) , Q(is_deleted=False))
+
+        if (user_obj.is_active == False): raise Exception("HANDLED: Account is not activated.")
+
         password = generate_password()
         user_obj.set_password(password)
         user_obj.save()
@@ -176,9 +181,9 @@ def login_user(req):
             raise Exception("HANDLED: User not found.")
 
         userObj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username), is_deleted = False)
-        if (userObj.is_active == False): raise Exception("HANDLED: Account is deactivated.")
+        if (userObj.is_active == False): raise Exception("HANDLED: Account is not activated.")
 
-        if (userObj.is_deleted == True): raise Exception("HANDLED: Account does not exists.")
+        # if (userObj.is_deleted == True): raise Exception("HANDLED: Account does not exists.")
 
         user    = authentication.authenticate(req,user_login_id=userObj.user_login_id, password=password)
         if user is  None: raise Exception("HANDLED: Invalid Credentials")
@@ -195,6 +200,7 @@ def login_user(req):
         # logger.debug ("User history created with id:'%s'",  usl_h.user_login_history_id)
         
         res = SuccessResp
+        res['redirect_to'] = '/'
         authentication.login(req, user)
 
 
@@ -228,7 +234,8 @@ def create_user(req):
         res = modify_user(user_login_id=login_id, update_profile=False, **params)
 
         activate_url = f"{settings.BASE_URL}/users/activate/{login_id}/{generate_url_hash(login_id)}"
-        res['record']['activation_url'] = activate_url
+        # res['record']['activation_url'] = activate_url
+        print (">>>>>>>> activation url: {}".format(activate_url))
         # logger.debug ("User created or updated with username:'%s' and password: '%s'", login_id, passwd)
 
     except Exception as e:
