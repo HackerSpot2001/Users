@@ -1,9 +1,50 @@
 from .models import Party, UserLogin, ContactMech, PartyContactMech, TelecomNumber, PostalAddress 
-from .models import PartyContent, Content,DataResource,ElectronicText, Enumeration, PartyRelationship, PartyRole, PartyGroup
+from .models import PartyContent, Content,DataResource,ElectronicText, Enumeration, PartyRelationship, PartyRole, PartyGroup, PartyClassification
+from django.core.paginator import Paginator
 from django.utils.timezone import now 
 from Helpers.Utils import gen_id, parse_mobile,handle_exception, get_initials, checkEmail, checkMobile
 from json import loads 
 
+def get_users (**filters):
+    res = {}
+    try:
+        search = {}
+        classification          = filters.get("classification", None)
+        rows                    = filters.get("rows", 10)
+        page                    = int(filters.get("page", 1))
+        select_rel              = ['party',]
+
+        if (classification != None ):
+            search['party__partyclassification__party_classification_group_id'] = str(classification).upper()
+        
+        users_objs              = UserLogin.objects.select_related(*select_rel).filter(**search).all()
+        paginator               = Paginator(users_objs, rows)
+        paginator.validate_number(page)
+        users                   = paginator.get_page(page)
+        res["users"] =  [
+            {
+                'birth_date' : user.birth_date.strftime('%Y-%m-%d'),
+                'first_name' : user.first_name,
+                'middle_name' : user.middle_name,
+                'last_name' : user.last_name,
+                'fullname' : user.getFullName(),
+                'party_id' : user.party_id,
+                'profilePic' : user.party.getProfilePic(),
+                'created_stamp': int(user.created_stamp.timestamp()),
+                'user_login_id': user.user_login_id,
+            } for user in users
+        ]
+        res['metadata'] = {
+            'total_count' : paginator.count,
+            'total_pages' : paginator.num_pages,
+            'current_page': page
+        }
+        
+    except Exception as e:
+        res = handle_exception(e)
+        print(e)
+
+    return res
 
 
 def get_user_info(user_login_id):
@@ -79,7 +120,7 @@ def get_user_info(user_login_id):
             'record' : {
                 'business_info': business_info,
                 'user_info'             :   {
-                    'fullname'          : user.get_full_name(),
+                    'fullname'          : user.getFullName(),
                     'firstname'         : user.first_name,
                     'last_name'         : user.last_name,
                     'middle_name'       : user.middle_name,
@@ -89,7 +130,8 @@ def get_user_info(user_login_id):
                     'marital_status'    : user.marital_status_id,
                     'salutation'        : user.salutation_id,
                     'gender'            : user.gender_id,
-                    'dob'               : user.birth_date.strftime('%d-%m-%Y'),
+                    # 'dob'               : user.birth_date.strftime('%d-%m-%Y'),
+                    'dob'               : user.birth_date.strftime('%Y-%m-%d'),
                     'is_private'        : user.is_private,
                     'is_active'         : user.is_active,
                     'is_staff'          : user.is_staff,
@@ -125,7 +167,9 @@ def modify_user(user_login_id, update_profile=False, **params):
     phone               = params.get('phone',       None)
     whastapp_number     = params.get('whastapp',    None)
     party_group         = params.get('party_group', None)
+    classification      = params.get('classification', None)
     utype               = params.get('utype', None)
+
     gender              = str(params.get("gender","")).upper()
     marital_status      = str(params.get('marital_status','')).upper()
 
@@ -174,9 +218,19 @@ def modify_user(user_login_id, update_profile=False, **params):
     UserLogin.objects.filter(user_login_id=user_login_id).update(**user_args)
     # logger.debug ("party created with party_id:'%s'", party.party_id)
 
-    if (str(utype).lower() == 'EMP'):
+    if (str(utype).upper() == 'EMP'):
         add_reln_ship(party_from=party_id, party_to='Company',reln_type='EMPLOYMENT', role_to='INTERNAL_ORGANIZATIO',role_from='EMPLOYEE', status='PARTYREL_CREATED')
-
+        
+    # if (str(classification).upper() != None):
+    if (classification != None):
+        classification = str(classification).upper()
+        payload = {
+            'party_classification_group_id'     : classification,
+            'party_id'                          : party_id 
+        }
+        create_classification(**payload)
+        # add_reln_ship(party_from=party_id, party_to='Company',reln_type='EMPLOYMENT', role_to='INTERNAL_ORGANIZATIO',role_from='EMPLOYEE', status='PARTYREL_CREATED')
+        
 
     if (email_id != None) and (email_id != "") and (checkEmail(email_id)):
         contact_args = { 'contact_type' : 'EMAIL_ADDRESS', 'value' : email_id , "party_id": party.party_id, 'purpose':"PRIMARY_EMAIL" , 'address' : None}
@@ -458,3 +512,16 @@ def create_party_group(**params):
     return res 
 
 
+
+def create_classification(**params):
+    party_classification_group_id   = params.get('party_classification_group_id',None)
+    party_id                        = params.get('party_id',None)         
+    if (party_classification_group_id== None ): raise Exception("HANDLED: party_classification_group_id is required to create classification")
+    if (party_id== None ): raise Exception("HANDLED: party_id is required to create classification")
+    payload = {
+        'party_id': party_id,
+        'party_classification_group_id':party_classification_group_id
+    }
+    pcf = PartyClassification.objects.create(**payload)
+    print(pcf.party_classification_id)
+    return pcf
