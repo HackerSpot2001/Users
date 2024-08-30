@@ -8,4 +8,6 @@ INSERT INTO hrms.party_type (party_type_id,parent_type_id,has_table,description,
 INSERT INTO hrms.party_type (party_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('LEGAL_ORGANIZATION','PARTY_GROUP','N','Legal Organization','2023-07-13 23:14:52.807+05:30','2023-07-13 23:14:52.807+05:30');
 INSERT INTO hrms.party_type (party_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('CORPORATION','LEGAL_ORGANIZATION','N','Corporation','2023-07-13 23:14:52.809+05:30','2023-07-13 23:14:52.809+05:30');
 INSERT INTO hrms.party_type (party_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('GOVERNMENT_AGENCY','LEGAL_ORGANIZATION','N','Government Agency','2023-07-13 23:14:52.811+05:30','2023-07-13 23:14:52.811+05:30');
+INSERT INTO hrms.party (party_id,party_type_id,external_id,description,status_id, created_date , created_stamp,updated_stamp) values('Company','PARTY_GROUP',NULL,'Party Id of the company','PARTY_ENABLED','2023-07-13 23:14:52.811+05:30','2023-07-13 23:14:52.811+05:30','2023-07-13 23:14:52.811+05:30');
+
 commit;

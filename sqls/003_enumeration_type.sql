@@ -78,4 +78,7 @@ INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,descrip
 INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('EXMPL_FEAT_SOURCE',NULL,'N','Example Feature Source','2023-07-13 23:17:24.552+05:30','2023-07-13 23:17:24.552+05:30');
 INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('LinkedIn','ppLoginProvider','N','LinkedIn Login','2023-07-13 23:17:25.224+05:30','2023-07-13 23:17:25.224+05:30');
 INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('GitHub','ppLoginProvider','N','GitHub Login','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
+INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('GENDER',NULL,'N','Gender','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
+INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('MARITAL_STATUS',NULL,'N','Marital Status','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
+INSERT INTO hrms.enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('SALUTAION',NULL,'N','Salutaion','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
 commit;
