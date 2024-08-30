@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from .managers import UserLoginManager
 from Helpers.Utils import *
+from json import loads
 
 
 primary_max_len = 40
@@ -73,10 +74,17 @@ class UserLogin(AbstractUser):
     objects = UserLoginManager()
 
     def __str__(self):
-        return f"{self.user_login_id} - {self.username}"    
+        deleted_text = 'Deleted' if self.is_deleted else 'Active'
+        return f"{self.user_login_id} - {self.username} ({deleted_text})"    
     
-    def get_full_name(self):
-        return str(' '.join([self.first_name, self.middle_name,self.last_name])).replace('  ',' ')
+    def getFullName(self):
+        name_parts = []
+        # self.first_name, self.middle_name,self.last_name
+        if self.first_name != None: name_parts.append(self.first_name)
+        if self.middle_name != None: name_parts.append(self.middle_name)
+        if self.last_name != None: name_parts.append(self.last_name)
+
+        return str(' '.join(name_parts)).replace('  ',' ')
 
     class Meta:
         managed = True
@@ -104,6 +112,23 @@ class Party(models.Model):
         return self.party_id    
     
 
+    def getProfilePic(self):
+        pc_set  = self.partycontent_set.filter(thru_date=None, party_content_type_id='PROFILE_PIC').select_related('content','content__data_resource').all()
+        imgSrc  = "/static/images/male-user.png"
+        if (len(pc_set) > 0):
+            pc  = pc_set[0]
+            content = pc.content
+            dr = content.data_resource
+            obj_info = loads(dr.object_info)
+            for thumb_obj in obj_info['thumbs_img']:
+                if (thumb_obj['label'] == "small_img"):
+                    imgSrc = thumb_obj['s3_obj']['public_url']
+                
+                continue
+
+        return imgSrc
+
+
     def getAllTelecomMechs(self):
         return self.partycontactmech_set.filter(verified='Y', thru_date=None, contact_mech__contact_mech_type_id='TELECOM_NUMBER'  ).select_related('contact_mech').all()
 
@@ -123,6 +148,15 @@ class Party(models.Model):
         ]
 
         return emails
+    
+    def getEmmail(self):
+        emails = self.allEmails()
+        email   = ""
+        if (len(emails) > 0):
+            email_obj = emails[0]
+            email = email_obj.get("value","")
+
+        return email
 
 
     def getAllTelecomNumbers(self):
@@ -140,6 +174,7 @@ class Party(models.Model):
             data['country_code']    = telecom_obj.country_code
             telecoms.append(data) 
 
+        # print(telecoms)
         return telecoms
     
 
@@ -312,6 +347,7 @@ class PartyContactMech(models.Model):
     class Meta:
         managed     = True
         db_table    = 'party_contact_mech'
+        ordering    = ['-created_stamp']
         unique_together = (('party', 'contact_mech', 'cm_purpose_type', 'from_date'),)
         verbose_name_plural = 'PartyContactMech'
 
@@ -333,6 +369,7 @@ class PartyContent(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'party_content'
         unique_together = (('party', 'content', 'party_content_type', 'from_date'),)
         verbose_name_plural = 'PartyContent'
@@ -351,6 +388,7 @@ class PartyContentType(models.Model):
         return self.party_content_type_id 
 
     class Meta:
+        ordering = ["-created_stamp"]
         managed = True
         db_table = 'party_content_type'
         verbose_name_plural = 'PartyContentType'
@@ -374,6 +412,7 @@ class PartyGroup(models.Model):
         return self.party_id 
 
     class Meta:
+        ordering = ["-created_stamp"]
         managed = True
         db_table = 'party_group'
         verbose_name_plural = 'PartyGroup'
@@ -392,6 +431,7 @@ class ContentAssocType(models.Model):
 
     class Meta:
         managed     = True
+        ordering = ["-created_stamp"]
         db_table    = 'content_assoc_type'
         verbose_name_plural = 'ContentAssocType'
 
@@ -408,6 +448,7 @@ class ContentPurposeType(models.Model):
         return self.content_purpose_type_id 
 
     class Meta:
+        ordering = ["-created_stamp"]
         managed     = True
         db_table    = 'content_purpose_type'
         verbose_name_plural = 'ContentPurposeType'
@@ -429,6 +470,7 @@ class ContentType(models.Model):
 
     class Meta:
         managed     = True
+        ordering = ["-created_stamp"]
         db_table    = 'content_type'
         verbose_name_plural = 'ContentType'
 
@@ -461,6 +503,7 @@ class PostalAddress(models.Model):
     
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'postal_address'
         verbose_name_plural = 'PostalAddress'
 
@@ -497,6 +540,7 @@ class Content(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'content'
         verbose_name_plural = 'Content'
 
@@ -527,6 +571,7 @@ class ContentAssoc(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'content_assoc'
         unique_together = (('content', 'content_id_to', 'content_assoc_type', 'from_date'),)
         verbose_name_plural = 'ContentAssoc'
@@ -548,6 +593,7 @@ class TelecomNumber(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'telecom_number'
         verbose_name_plural = 'TelecomNumber'
 
@@ -566,6 +612,7 @@ class ElectronicText(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'electronic_text'
         verbose_name_plural = 'ElectronicText'
 
@@ -599,6 +646,7 @@ class DataResource(models.Model):
     
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'data_resource'
         verbose_name_plural = 'DataResource'
 
@@ -617,6 +665,7 @@ class DataResourceType(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'data_resource_type'
         verbose_name_plural = 'DataResourceType'
 
@@ -640,6 +689,7 @@ class Geo(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'geo'
         verbose_name_plural = 'Geo'
 
@@ -675,6 +725,7 @@ class GeoAssocType(models.Model):
     class Meta:
         managed = True
         db_table = 'geo_assoc_type'
+        ordering = ["-created_stamp"]
         verbose_name_plural = 'GeoAssocType'
 
 
@@ -692,6 +743,7 @@ class GeoType(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'geo_type'
         verbose_name_plural = 'GeoType'
 
@@ -721,6 +773,7 @@ class PartyRelationship(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'party_relationship'
         unique_together = (('party_role_from', 'party_role_to', 'party_relationship_type', 'from_date'),)
         # unique_together = (('party_role_from', 'party_role_to', 'party_relationship_type', 'from_date'),('party_role_from','party_relationship_type'), ( 'party_role_to','party_relationship_type'))
@@ -744,6 +797,7 @@ class PartyRelationshipType(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'party_relationship_type'
         verbose_name_plural = 'PartyRelationshipType'
 
@@ -764,6 +818,7 @@ class PartyRole(models.Model):
     class Meta:
         managed = True
         db_table = 'party_role'
+        ordering = ["-created_stamp"]
         unique_together = (('party', 'role_type'),)
         verbose_name_plural = 'PartyRole'
 
@@ -782,67 +837,71 @@ class RoleType(models.Model):
 
     class Meta:
         managed = True
+        ordering = ["-created_stamp"]
         db_table = 'role_type'
         verbose_name_plural = 'RoleType'
 
 
 
-# class PartyClassification(models.Model):
-#     party_classification_id     = models.CharField(primary_key=True, max_length=primary_max_len, default=gen_party_classification)
-#     party                       = models.ForeignKey(Party, models.DO_NOTHING)  # The composite primary key (party_id, party_classification_group_id, from_date) found, that is not supported. The first column is selected.
-#     party_classification_group  = models.ForeignKey('PartyClassificationGroup', models.DO_NOTHING)
-#     from_date                   = models.DateTimeField(auto_now_add=True)
-#     thru_date                   = models.DateTimeField(blank=True, null=True)
-#     updated_stamp               = models.DateTimeField(auto_now_add=True)
-#     created_stamp               = models.DateTimeField(auto_now_add=True)
+class PartyClassification(models.Model):
+    party_classification_id     = models.CharField(primary_key=True, max_length=primary_max_len, default=gen_party_classification)
+    party                       = models.ForeignKey(Party, models.DO_NOTHING)  # The composite primary key (party_id, party_classification_group_id, from_date) found, that is not supported. The first column is selected.
+    party_classification_group  = models.ForeignKey('PartyClassificationGroup', models.DO_NOTHING)
+    from_date                   = models.DateTimeField(auto_now_add=True)
+    thru_date                   = models.DateTimeField(blank=True, null=True)
+    updated_stamp               = models.DateTimeField(auto_now_add=True)
+    created_stamp               = models.DateTimeField(auto_now_add=True)
 
 
-#     def __str__(self):
-#         return f"{self.party_id} | {self.party_classification_group_id}"
+    def __str__(self):
+        return f"{self.party_id} | {self.party_classification_group_id}"
 
 
-#     class Meta:
-#         managed     = True
-#         db_table    = 'party_classification'
-#         unique_together = (('party', 'party_classification_group', 'from_date'),)
-#         verbose_name_plural = 'PartyClassification'
+    class Meta:
+        managed     = True
+        ordering = ["-created_stamp"]
+        db_table    = 'party_classification'
+        unique_together = (('party', 'party_classification_group', 'from_date'),)
+        verbose_name_plural = 'PartyClassification'
 
 
 
-# class PartyClassificationGroup(models.Model):
-#     party_classification_group_id   = models.CharField(primary_key=True, max_length=primary_max_len)
-#     party_classification_type       = models.ForeignKey('PartyClassificationType', models.DO_NOTHING, blank=True, null=True)
-#     parent_group                    = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
-#     description                     = models.CharField(max_length=255, blank=True, null=True)
-#     updated_stamp                   = models.DateTimeField(auto_now_add=True)
-#     created_stamp                   = models.DateTimeField(auto_now_add=True)
+class PartyClassificationGroup(models.Model):
+    party_classification_group_id   = models.CharField(primary_key=True, max_length=primary_max_len)
+    party_classification_type       = models.ForeignKey('PartyClassificationType', models.DO_NOTHING, blank=True, null=True)
+    parent_group                    = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    description                     = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp                   = models.DateTimeField(auto_now_add=True)
+    created_stamp                   = models.DateTimeField(auto_now_add=True)
 
 
-#     def __str__(self):
-#         return f"{self.party_classification_group_id} | {self.party_classification_type_id}"
+    def __str__(self):
+        return f"{self.party_classification_group_id} | {self.party_classification_type_id}"
 
 
-#     class Meta:
-#         managed     = True
-#         db_table    = 'party_classification_group'
-#         unique_together = (('party_classification_group_id', 'party_classification_type'),)
-#         verbose_name_plural = 'PartyClassificationGroup'
+    class Meta:
+        managed     = True
+        ordering = ["-created_stamp"]
+        db_table    = 'party_classification_group'
+        unique_together = (('party_classification_group_id', 'party_classification_type'),)
+        verbose_name_plural = 'PartyClassificationGroup'
 
 
-# class PartyClassificationType(models.Model):
-#     party_classification_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
-#     parent_type                     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
-#     has_table                       = models.CharField(max_length=1, blank=True, null=True)
-#     description                     = models.CharField(max_length=255, blank=True, null=True)
-#     updated_stamp                   = models.DateTimeField(auto_now_add=True)
-#     created_stamp                   = models.DateTimeField(auto_now_add=True)
+class PartyClassificationType(models.Model):
+    party_classification_type_id    = models.CharField(primary_key=True, max_length=primary_max_len)
+    parent_type                     = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    has_table                       = models.CharField(max_length=1, blank=True, null=True)
+    description                     = models.CharField(max_length=255, blank=True, null=True)
+    updated_stamp                   = models.DateTimeField(auto_now_add=True)
+    created_stamp                   = models.DateTimeField(auto_now_add=True)
 
-#     def __str__(self):
-#         return self.party_classification_type_id
+    def __str__(self):
+        return self.party_classification_type_id
 
 
-#     class Meta:
-#         managed     = True
-#         db_table    = 'party_classification_type'
-#         verbose_name_plural = 'PartyClassificationType'
+    class Meta:
+        ordering = ["-created_stamp"]
+        managed     = True
+        db_table    = 'party_classification_type'
+        verbose_name_plural = 'PartyClassificationType'
 

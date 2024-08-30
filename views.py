@@ -11,6 +11,8 @@ from Helpers.Utils import handle_exception, SuccessResp, handle_params, gen_id, 
 from Helpers.Utils import get_thumbnails_from_img, save_file_to_filesystem
 from json import dumps
 from django.conf import settings
+from django.db import transaction
+
 
 
 # ALL Get Requests
@@ -29,7 +31,7 @@ def logoff(req):
 
 
 
-    
+
 @require_http_methods(['GET',])
 def get_profile(req):
     try:
@@ -58,6 +60,7 @@ def activate_acc(req,user_login_id,uaid):
         ul_obj = UserLogin.objects.get(user_login_id=user_login_id)
         ul_obj.is_active = True
         ul_obj.save()
+        print("Account activated")
         return redirect("/login")
         # if (ul_obj.is_active == True):
         #     raise Exception('HANDLED:User is already activated')
@@ -73,6 +76,7 @@ def activate_acc(req,user_login_id,uaid):
 
 
 @require_http_methods(['GET',])
+@transaction.atomic
 def remove_account(req):
     try:
         user = req.user
@@ -105,7 +109,6 @@ def forgot_password(req):
             raise Exception("HANDLED:User not exists.")
         
         user_obj = UserLogin.objects.get(Q(username=username) | Q(user_login_id=username) , Q(is_deleted=False))
-
         if (user_obj.is_active == False): raise Exception("HANDLED: Account is not activated.")
 
         password = generate_password()
@@ -134,6 +137,7 @@ def forgot_password(req):
 
 
 @require_http_methods(['GET',])
+@transaction.atomic
 def change_password(req):
     try:
         params      = handle_params(req)
@@ -214,6 +218,7 @@ def login_user(req):
 
 @csrf_exempt
 @require_http_methods(['POST',])
+@transaction.atomic
 def create_user(req):
     try:
         params              = handle_params(req)
@@ -248,6 +253,7 @@ def create_user(req):
 
 @csrf_exempt
 @require_http_methods(['POST',])
+@transaction.atomic
 # @group_required(('HR_Group'),login_url='login/')
 def update_user(req):
     try:
@@ -276,6 +282,7 @@ def update_user(req):
 
 @csrf_exempt
 @require_http_methods(['POST',])
+@transaction.atomic
 def update_profile_pic(req):
     try:
         user            = req.user
@@ -321,6 +328,7 @@ def update_profile_pic(req):
 
 @csrf_exempt
 @require_http_methods(['POST',])
+@transaction.atomic
 def createPartyGroup(req):
     try:
         user            = req.user
@@ -378,5 +386,3 @@ def createPartyGroup(req):
         res = handle_exception(e)
 
     return JsonResponse(res)
-
-
