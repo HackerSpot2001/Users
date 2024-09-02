@@ -905,3 +905,23 @@ class PartyClassificationType(models.Model):
         db_table    = 'party_classification_type'
         verbose_name_plural = 'PartyClassificationType'
 
+
+
+class UserLoginFCM(models.Model):
+    ulf_id              = models.CharField(primary_key=True, max_length=primary_max_len)
+    user_login          = models.ForeignKey(UserLogin, models.DO_NOTHING, blank=True, null=True)
+    fcm_key             = models.TextField(blank=True, null=True)
+    from_date           = models.DateTimeField(auto_now_add=True)
+    thru_date           = models.DateTimeField(auto_now_add=True)
+    updated_stamp       = models.DateTimeField(auto_now_add=True)
+    created_stamp       = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.ulf_id} | {self.user_login_id}" 
+
+
+    class Meta:
+        ordering = ["-created_stamp"]
+        managed     = True
+        db_table    = 'user_login_fcms'
+        verbose_name_plural = 'UserLoginFCM'
