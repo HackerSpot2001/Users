@@ -910,14 +910,16 @@ class PartyClassificationType(models.Model):
 class UserLoginFCM(models.Model):
     ulf_id              = models.CharField(primary_key=True, max_length=primary_max_len)
     user_login          = models.ForeignKey(UserLogin, models.DO_NOTHING, blank=True, null=True)
+    device_type         = models.ForeignKey(Enumeration, models.DO_NOTHING, blank=True, null=True)
     fcm_key             = models.TextField(blank=True, null=True)
+    fcm_data            = models.TextField(blank=True, null=True)
     from_date           = models.DateTimeField(auto_now_add=True)
-    thru_date           = models.DateTimeField(auto_now_add=True)
+    thru_date           = models.DateTimeField(null=True,blank=True)
     updated_stamp       = models.DateTimeField(auto_now_add=True)
     created_stamp       = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.ulf_id} | {self.user_login_id}" 
+        return f"{self.ulf_id} | {self.user_login_id}"
 
 
     class Meta:
