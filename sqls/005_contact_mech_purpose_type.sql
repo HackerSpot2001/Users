@@ -35,4 +35,5 @@ INSERT INTO contact_mech_purpose_type (contact_mech_purpose_type_id,description,
 INSERT INTO contact_mech_purpose_type (contact_mech_purpose_type_id,description,created_stamp,updated_stamp) values('FACEBOOK_URL','Facebook Website URL','2023-07-13 23:14:52.311+05:30','2023-07-13 23:14:52.311+05:30');
 INSERT INTO contact_mech_purpose_type (contact_mech_purpose_type_id,description,created_stamp,updated_stamp) values('LINKEDIN_URL','LinkedIn Website URL','2023-07-13 23:14:52.312+05:30','2023-07-13 23:14:52.312+05:30');
 INSERT INTO contact_mech_purpose_type (contact_mech_purpose_type_id,description,created_stamp,updated_stamp) values('ICAL_URL','iCalendar URL','2023-07-13 23:15:00.888+05:30','2023-07-13 23:15:00.888+05:30');
+INSERT INTO contact_mech_purpose_type (contact_mech_purpose_type_id,description,created_stamp,updated_stamp) values('WHATSAPP_NUMBER','Whatsapp Number','2023-07-13 23:15:00.888+05:30','2023-07-13 23:15:00.888+05:30');
 commit;

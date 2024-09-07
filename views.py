@@ -53,19 +53,20 @@ def get_profile(req):
 @require_http_methods(['GET',])
 def activate_acc(req,user_login_id,uaid):
     try:
+        print("I am here")
         hash = generate_url_hash(user_login_id)
         if (hash != uaid):
             raise Exception("HANDLED:User not identified.")
         
         ul_obj = UserLogin.objects.get(user_login_id=user_login_id)
+        if (ul_obj.is_active == True):
+            raise Exception('HANDLED:User is already activated')
+
         ul_obj.is_active = True
         ul_obj.save()
-        print("Account activated")
-        return redirect("/login")
-        # if (ul_obj.is_active == True):
-        #     raise Exception('HANDLED:User is already activated')
+        # return redirect("/login")
 
-        # res = SuccessResp
+        res = SuccessResp
 
 
     except Exception as e:
@@ -140,24 +141,33 @@ def forgot_password(req):
 @transaction.atomic
 def change_password(req):
     try:
-        params      = handle_params(req)
-        password    = params.get('password',None)
+        params              = handle_params(req)
+        current_password    = params.get('current_password', '')
+        new_password        = params.get('new_password', '')
+        repat_password      = params.get('repeat_password', '')
 
         if req.user.is_anonymous:
             raise Exception("HANDLED:User must be logged-in.")
 
-        if (password == None) or (password == ''):
-            raise Exception("HANDLED:new password is required.")
+        if ((new_password != repat_password ) or (new_password == '') or (new_password == None) ):
+            raise Exception("HANDLED:new password / repeat password is required.")
 
+        if (  (current_password  == '') or (current_password  == None) ):
+            raise Exception("HANDLED:current password  is required.")
+        
+        user_login_id = req.user.user_login_id
+        user    = authentication.authenticate(req,user_login_id=user_login_id , password=current_password)
+
+        if user is  None: raise Exception("HANDLED: your given current password does not matches with your logged-in creds")
         
         user_obj = req.user
-        user_obj.set_password(password)
+        user_obj.set_password(new_password)
         user_obj.save()
 
         """ Communication will be sent. """ 
 
         res = SuccessResp
-        print("Password: ", password)
+        print("Password: ", new_password)
 
     except Exception as e:
         res = handle_exception(e)
@@ -288,7 +298,7 @@ def update_profile_pic(req):
         user            = req.user
         files           = dict(req.FILES)
         profile_pics    = files['profile_pic']
-        
+        print(profile_pics)
         if (user.is_anonymous):
             raise Exception('HANDLED:user must be logged-in to use this API.')
         

@@ -170,6 +170,7 @@ def modify_user(user_login_id, update_profile=False, **params):
     classification      = params.get('classification', None)
     utype               = params.get('utype', None)
 
+    salutation          = str(params.get('salutation',  ''))
     gender              = str(params.get("gender","")).upper()
     marital_status      = str(params.get('marital_status','')).upper()
 
@@ -177,7 +178,6 @@ def modify_user(user_login_id, update_profile=False, **params):
         # "is_superuser"      : params.get('is_superuser'     , user_obj.is_superuser),
         # "is_staff"          : params.get('is_staff'         ,   user_obj.is_staff),
         # "is_active"         : params.get('is_active'        ,   user_obj.is_active),
-        "salutation"        : params.get('salutation'       ,   user_obj.salutation),
         "first_name"        : params.get('first_name'       ,   user_obj.first_name),
         "last_name"         : params.get('last_name'        ,   user_obj.last_name),
         "middle_name"       : params.get('middle_name'      ,   user_obj.middle_name),
@@ -190,6 +190,10 @@ def modify_user(user_login_id, update_profile=False, **params):
 
     user_args['initials']   = get_initials(str(user_args["first_name"] + " " + user_args["last_name"]))
 
+    
+    if Enumeration.objects.filter( enum_id=salutation, enum_type='SALUTATION' ).exists():
+        user_args['salutation_id']  = salutation
+        
     if Enumeration.objects.filter( enum_id=marital_status, enum_type='MARITAL_STATUS' ).exists():
         user_args['marital_status_id']  = marital_status
         
@@ -463,9 +467,9 @@ def create_party_group(**params):
         raise Exception ('HANDLED:person_party_id is required.')
 
     res = {'person_party_id' :  person_party_id, 'person_role_id' : person_role_id, 'party_group_role_id' : pg_role_id, 'reln_type_id' : reln_type_id }
-
+    (pr_role_from, _ ) = PartyRole.objects.get_or_create(party_id=person_party_id, role_type_id=person_role_id )
     payload = {
-        'party_role_from'               : PartyRole.objects.get(party_id=person_party_id, role_type_id=person_role_id ) ,
+        'party_role_from'               : pr_role_from ,
         'party_relationship_type_id'    : reln_type_id ,
         'thru_date__isnull'             : True,
     }
