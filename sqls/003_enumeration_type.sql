@@ -81,4 +81,6 @@ INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,
 INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('GENDER',NULL,'N','Gender','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
 INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('MARITAL_STATUS',NULL,'N','Marital Status','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
 INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('SALUTATION',NULL,'N','Salutation','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
+INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('PLATFORMS',NULL,'N','All Platforms','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
+INSERT INTO enumeration_type (enum_type_id,parent_type_id,has_table,description,created_stamp,updated_stamp) values('DEVICE_PLATFORM','PLATFORMS','N','Device Platforms','2023-07-13 23:17:25.914+05:30','2023-07-13 23:17:25.914+05:30');
 commit;

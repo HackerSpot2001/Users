@@ -360,4 +360,7 @@ INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,
 INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('DIVORCED','MARITAL_STATUS','MARITAL_STATUS','03','Divorced','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
 INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('MR','SALUTATION',NULL,'01','Mr.','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
 INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('MRS','SALUTATION',NULL,'02','Mrs.','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
+INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('WINDOWS','DEVICE_PLATFORM',NULL,'01','Windows Platform','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
+INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('LINUX','DEVICE_PLATFORM',NULL,'02','Linux System','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
+INSERT INTO enumeration (enum_id,enum_type_id,enum_code,sequence_id,description,created_stamp,updated_stamp) values('ANDROID','DEVICE_PLATFORM',NULL,'03','Android Platform','2023-07-13 23:17:24.564+05:30','2023-07-13 23:17:24.564+05:30');
 commit;
