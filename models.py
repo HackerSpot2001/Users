@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from .managers import UserLoginManager
 from Helpers.Utils import *
 from json import loads
+import re
 
 
 primary_max_len = 40
@@ -84,7 +85,7 @@ class UserLogin(AbstractUser):
         if self.middle_name != None: name_parts.append(self.middle_name)
         if self.last_name != None: name_parts.append(self.last_name)
 
-        return str(' '.join(name_parts)).replace('  ',' ')
+        return re.sub(r'\s+',' ',str(' '.join(name_parts)))
 
     class Meta:
         managed = True
@@ -316,13 +317,14 @@ class ContactMech(models.Model):
 
 
     def __str__(self):
-        return self.contact_mech_id    
+        return f"{self.contact_mech_id} | {self.contact_mech_type_id} | {self.info_string}"    
 
 
     class Meta:
         managed     = True
         db_table    = 'contact_mech'
         verbose_name_plural = 'ContactMech'
+        ordering    = ['-created_stamp']
 
 
 

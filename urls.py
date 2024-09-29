@@ -1,7 +1,8 @@
 from django.urls import path
-from .views import *
+from .views import login_user,logoff,update_user,create_user, get_profile,remove_account,forgot_password, change_password,update_profile_pic, createPartyGroup,activate_acc
 
 urlpatterns = [
+    # APIs
     path('logoff', view=logoff, name='Logoff User'),
     path('profile', view=get_profile, name='User Profile'),
     path('remove', view=remove_account, name='Remove User'),

@@ -19,15 +19,25 @@ from django.db import transaction
 @require_http_methods(['GET',])
 def logoff(req):
     try:
+        params = handle_params(req)
+        r = params.get("r",'')
         if req.user.is_authenticated:
             authentication.logout(req)
 
-        res = SuccessResp
+        if ( r != 'login' ):
+            res = SuccessResp
+            result = JsonResponse(res)
+
+        else:
+            result = redirect(settings.LOGIN_PAGE_URL)
+
+
 
     except Exception as e:
         res = handle_exception(e)
-
-    return JsonResponse(res)
+        result = JsonResponse(res)
+    
+    return result
 
 
 
@@ -70,7 +80,7 @@ def activate_acc(req,user_login_id,uaid):
 
 
     except Exception as e:
-        res = handle_exception(str(e))
+        res = handle_exception(e)
     return JsonResponse(res)
 
 
@@ -150,7 +160,7 @@ def change_password(req):
             raise Exception("HANDLED:User must be logged-in.")
 
         if ((new_password != repat_password ) or (new_password == '') or (new_password == None) ):
-            raise Exception("HANDLED:new password / repeat password is required.")
+            raise Exception("HANDLED:new password not matches with repeat password.")
 
         if (  (current_password  == '') or (current_password  == None) ):
             raise Exception("HANDLED:current password  is required.")
@@ -166,7 +176,9 @@ def change_password(req):
 
         """ Communication will be sent. """ 
 
+        authentication.logout(req)
         res = SuccessResp
+        res['redirect_to'] = '/'
         print("Password: ", new_password)
 
     except Exception as e:
@@ -247,7 +259,7 @@ def create_user(req):
         user.save()
 
         res = modify_user(user_login_id=login_id, update_profile=False, **params)
-
+        res['redirect_to'] = '/'
         activate_url = f"{settings.BASE_URL}/users/activate/{login_id}/{generate_url_hash(login_id)}"
         # res['record']['activation_url'] = activate_url
         print (">>>>>>>> activation url: {}".format(activate_url))
@@ -297,10 +309,12 @@ def update_profile_pic(req):
     try:
         user            = req.user
         files           = dict(req.FILES)
-        profile_pics    = files['profile_pic']
-        print(profile_pics)
+        profile_pics    = files.get('profile_pic', [] )
         if (user.is_anonymous):
             raise Exception('HANDLED:user must be logged-in to use this API.')
+            
+        if (profile_pics.__len__() == 0):
+            raise Exception('HANDLED:profile_pic image is required.')
         
         for pp in profile_pics:
             save_obj    = save_file_to_filesystem(file=pp,initals='PP_',base_path=settings.BASE_DIR)
