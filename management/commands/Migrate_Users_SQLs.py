@@ -14,9 +14,16 @@ class Command(BaseCommand):
         for file in file_lists:
             file_obj = open(os.path.join(self.folder_path, file),'r')
             with connection.cursor() as cursor:
-                sql = file_obj.read()
-                sql = sql.replace("hrms",'hms')
-                cursor.execute(sql)
+                mSql = ""
+                for line in file_obj.readlines():
+                    data = line
+                    if (data.lower().startswith('insert')):
+                        data = data.replace(';','').strip().replace('hrms','public')
+                        data += " on conflict do nothing;"
+                    
+                    mSql += data + "\n"
+
+                cursor.execute(mSql)
 
             file_obj.close()
                     
