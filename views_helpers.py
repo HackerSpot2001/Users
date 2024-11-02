@@ -2,7 +2,7 @@ from .models import Party, UserLogin, ContactMech, PartyContactMech, TelecomNumb
 from .models import PartyContent, Content,DataResource,ElectronicText, Enumeration, PartyRelationship, PartyRole, PartyGroup, PartyClassification
 from django.core.paginator import Paginator
 from django.utils.timezone import now 
-from Helpers.Utils import gen_id, parse_mobile,handle_exception, get_initials, checkEmail, checkMobile
+from Helpers.Utils import gen_id, parse_mobile,handle_exception, get_initials, checkEmail, checkMobile,gen_slug
 from json import loads 
 
 def get_users (**filters):
@@ -219,6 +219,11 @@ def modify_user(user_login_id, update_profile=False, **params):
         user_args['is_active']      = False
         party = Party.objects.create(**party_args)
 
+    if not party.external_id:
+        party.external_id = gen_slug()
+        party.save()
+
+        
     user_args['updated_stamp']   = now()
     UserLogin.objects.filter(user_login_id=user_login_id).update(**user_args)
     # logger.debug ("party created with party_id:'%s'", party.party_id)
