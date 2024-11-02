@@ -98,7 +98,7 @@ class UserLogin(AbstractUser):
 class Party(models.Model):
     party_id        = models.CharField(primary_key=True, max_length=primary_max_len)
     party_type      = models.ForeignKey('PartyType', models.CASCADE, blank=True, null=True)
-    external_id     = models.CharField(max_length=20, blank=True, null=True)
+    external_id     = models.CharField(max_length=20, unique=True, blank=True, null=True)
     description     = models.TextField(blank=True, null=True)
     status          = models.ForeignKey('StatusItem', models.CASCADE, blank=True, null=True)
     created_date    = models.DateTimeField(blank=True, null=True)
