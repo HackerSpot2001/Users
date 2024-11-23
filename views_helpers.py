@@ -143,6 +143,7 @@ def get_user_info(user_login_id):
                 'party_obj' : {
                     'party_id'          : user.party_id,
                     'party_type'        : user.party.party_type_id,
+                    'party_external_id' : user.party.external_id,
                     'created_stamp'     : user.party.created_stamp.timestamp(),
                 },
                 'party_assets'          : user_attachs,
@@ -223,7 +224,7 @@ def modify_user(user_login_id, update_profile=False, **params):
         party.external_id = gen_slug()
         party.save()
 
-        
+
     user_args['updated_stamp']   = now()
     UserLogin.objects.filter(user_login_id=user_login_id).update(**user_args)
     # logger.debug ("party created with party_id:'%s'", party.party_id)
